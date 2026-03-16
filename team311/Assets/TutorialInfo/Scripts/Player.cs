@@ -3,40 +3,40 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public float moveSpeed = 8f;
-    public float jumpForce = 12f;
+    public float jumpForce = 7f;
 
     Rigidbody rb;
     bool isGrounded;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         rb = GetComponent<Rigidbody>();
     }
-
-    // Update is called once per frame
     void Update()
     {
-        // --- �ړ� ---
+        // 移動は AddForce で行う
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
         Vector3 move = new Vector3(h, 0, v) * moveSpeed;
+
+        // XZ の速度だけ固定
         rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
 
-        // --- �W�����v ---
+        // ジャンプ
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
     }
-    private void OnCollisionStay(Collision collision)
+   
+    private void OnCollisionEnter(Collision collision)
     {
-        isGrounded = true;
+            isGrounded = true;
     }
 
     private void OnCollisionExit(Collision collision)
     {
-        isGrounded = false;
+            isGrounded = false;
     }
 }
