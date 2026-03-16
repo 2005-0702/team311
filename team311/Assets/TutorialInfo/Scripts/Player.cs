@@ -16,9 +16,9 @@ public class Player : MonoBehaviour
     {
         // 移動は AddForce で行う
         float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
+        //float v = Input.GetAxis("Vertical");
 
-        Vector3 move = new Vector3(h, 0, v) * moveSpeed;
+        Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
 
         // XZ の速度だけ固定
         rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
