@@ -8,6 +8,7 @@ public class Player : MonoBehaviour
     Rigidbody rb;
     bool isGrounded;
 
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -28,15 +29,20 @@ public class Player : MonoBehaviour
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
+
+
     }
+    
    
+
+
     private void OnCollisionEnter(Collision collision)
     {
-            isGrounded = true;
+        isGrounded = true;
     }
 
     private void OnCollisionExit(Collision collision)
     {
-            isGrounded = false;
+        isGrounded = false;
     }
 }
