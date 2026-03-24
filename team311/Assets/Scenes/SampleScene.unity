@@ -1022,8 +1022,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c43b9f275cf9edc4b871e6cd027232cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Box
-  holdPoint: {fileID: 0}
-  maxPickupDistance: 2
   dropForwardImpulse: 1.5
 --- !u!54 &2056556428
 Rigidbody:
@@ -1050,7 +1048,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 8
   m_CollisionDetection: 0
 --- !u!1 &2108080335
 GameObject:
@@ -1183,6 +1181,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Player
   moveSpeed: 8
   jumpForce: 8
+  holdPoint: {fileID: 0}
+  pickupRange: 1.5
 --- !u!54 &2108080341
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1208,7 +1208,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 120
   m_CollisionDetection: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
