@@ -132,4 +132,19 @@ public class Player : MonoBehaviour
     {
         isGrounded = false;
     }
+
+    // プロパティとして isGrounded を公開
+    public bool IsGrounded
+    {
+        get { return isGrounded; }
+    }
+
+    // プレイヤーが押しつぶされた時に呼ばれるメソッドを追加
+    public void Squash()
+    {
+        // ここに「ぺしゃんこ」になった時の処理を記述
+        // 例: ゲームオーバー処理やアニメーション再生など
+        Debug.Log("Player was squashed!");
+        // 必要に応じて追加の処理を実装してください
+    }
 }
