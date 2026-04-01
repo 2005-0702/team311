@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5234108644080816155}
   - component: {fileID: 5038252638660431595}
   - component: {fileID: 1343918863275649170}
+  - component: {fileID: 1187849142566262002}
   m_Layer: 0
   m_Name: UpperBody_Prefab
   m_TagString: Untagged
@@ -138,5 +139,21 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 8
   m_CollisionDetection: 0
+--- !u!114 &1187849142566262002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5576607228205285948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 709095844a5a4d549886523f32ec0d9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UpperBodyController
+  moveSpeed: 6
+  jumpForce: 5
+  holdPoint: {fileID: 0}
+  pickupRange: 1.2

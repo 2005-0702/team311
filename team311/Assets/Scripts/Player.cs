@@ -89,13 +89,23 @@ public class Player : MonoBehaviour
             heldBox = null;
         }
 
+        // カメラを事前に取得しておく
+        Camera cam = GetComponentInChildren<Camera>();
+
         // 上半身と下半身を生成
         if (upperBodyPrefab != null)
         {
             GameObject upper = Instantiate(upperBodyPrefab, transform.position + Vector3.up * 0.5f, transform.rotation);
-            // 必要に応じて物理的な衝撃を加える
             Rigidbody upperRb = upper.GetComponent<Rigidbody>();
             if (upperRb) upperRb.AddForce(Vector3.up * 2f, ForceMode.Impulse);
+
+            // 上半身をカメラで追いかけるようにする
+            if (cam != null)
+            {
+                cam.transform.SetParent(upper.transform);
+                cam.transform.localPosition = new Vector3(0, 2, -5); 
+                cam.transform.localRotation = Quaternion.Euler(15, 0, 0);
+            }
         }
 
         if (lowerBodyPrefab != null)
@@ -103,9 +113,8 @@ public class Player : MonoBehaviour
             GameObject lower = Instantiate(lowerBodyPrefab, transform.position, transform.rotation);
         }
 
-        // カメラが子供にいる場合の対策：カメラを親子関係から切り離して保護する
-        Camera cam = GetComponentInChildren<Camera>();
-        if (cam != null)
+        // カメラがまだ親子関係にある場合は切り離しておく（念のため）
+        if (cam != null && cam.transform.parent == transform)
         {
             cam.transform.SetParent(null);
         }

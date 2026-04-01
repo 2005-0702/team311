@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3052167898362570506}
   - component: {fileID: 8275522350177850538}
   - component: {fileID: 3194928718686285834}
+  - component: {fileID: -1192690577198069284}
   m_Layer: 0
   m_Name: LowerBody_Prefab
   m_TagString: Untagged
@@ -138,5 +139,18 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 8
   m_CollisionDetection: 0
+--- !u!114 &-1192690577198069284
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5814215335287250154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83c3919d8243d5b4b8d2178c132268e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LowerBodyMove
+  moveSpeed: 5
