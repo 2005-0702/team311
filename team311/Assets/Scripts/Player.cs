@@ -21,6 +21,10 @@ public class Player : MonoBehaviour
     Rigidbody rb;
     bool isGrounded;
 
+    bool isDashing = false;
+    float dashTime = 0.2f;
+    float dashTimer = 0f;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -30,10 +34,23 @@ public class Player : MonoBehaviour
     {
         if (isSplit) return; // 切断済みの場合は操作不可（必要に応じて変更）
 
+        // ダッシュ中は移動処理を止める（ここを追加）
+        if (isDashing)
+        {
+            dashTimer -= Time.deltaTime;
+            if (dashTimer <= 0f)
+            {
+                isDashing = false;
+            }
+            return; 
+        }
+
         // --- 移動処理 ---
         float h = Input.GetAxis("Horizontal");
         Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
+        //rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
         rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
+
 
         // --- ジャンプ処理 ---
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
@@ -126,6 +143,8 @@ public class Player : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         isGrounded = true;
+
+        
     }
 
     private void OnCollisionExit(Collision collision)
@@ -146,5 +165,13 @@ public class Player : MonoBehaviour
         // 例: ゲームオーバー処理やアニメーション再生など
         Debug.Log("Player was squashed!");
         // 必要に応じて追加の処理を実装してください
+    }
+
+    public void StartDash(float direction)
+    {
+        rb.linearVelocity = new Vector3(direction * 40f, rb.linearVelocity.y, 0);
+
+        isDashing = true;
+        dashTimer = dashTime;
     }
 }
