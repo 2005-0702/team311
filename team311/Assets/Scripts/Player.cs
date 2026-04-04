@@ -22,7 +22,7 @@ public class Player : MonoBehaviour
     bool isGrounded;
 
     bool isDashing = false;
-    float dashTime = 0.2f;
+    float dashTime = 0.1f;
     float dashTimer = 0f;
 
     void Start()
@@ -32,26 +32,17 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        if (isSplit) return; // 切断済みの場合は操作不可（必要に応じて変更）
-
-        // ダッシュ中は移動処理を止める（ここを追加）
-        if (isDashing)
+        Dashable dash = GetComponent<Dashable>();
+        if (dash != null && dash.IsDashing())
         {
-            dashTimer -= Time.deltaTime;
-            if (dashTimer <= 0f)
-            {
-                isDashing = false;
-            }
-            return; 
+            return;
         }
 
         // --- 移動処理 ---
         float h = Input.GetAxis("Horizontal");
         Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
-        //rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
         rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
-
-
+       
         // --- ジャンプ処理 ---
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
@@ -186,8 +177,7 @@ public class Player : MonoBehaviour
 
     public void StartDash(float direction)
     {
-        rb.linearVelocity = new Vector3(direction * 40f, rb.linearVelocity.y, 0);
-
+        rb.linearVelocity = new Vector3(direction * 80f, rb.linearVelocity.y, 0);
         isDashing = true;
         dashTimer = dashTime;
     }

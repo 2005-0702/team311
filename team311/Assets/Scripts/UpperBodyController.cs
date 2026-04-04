@@ -18,6 +18,9 @@ public class UpperBodyController : MonoBehaviour
     Rigidbody rb;
     bool isGrounded;
 
+    bool isDashing = false;
+    float dashTime = 0.2f;
+    float dashTimer = 0f;
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -27,6 +30,13 @@ public class UpperBodyController : MonoBehaviour
 
     void Update()
     {
+        // ダッシュ中は通常移動を止める
+        Dashable dash = GetComponent<Dashable>();
+        if (dash != null && dash.IsDashing())
+        {
+            return;
+        }
+
         // --- 移動処理 ---
         float h = Input.GetAxis("Horizontal");
         Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
@@ -44,7 +54,12 @@ public class UpperBodyController : MonoBehaviour
             HandleGrabDrop();
         }
     }
-
+    public void StartDash(float direction)
+    {
+        rb.linearVelocity = new Vector3(direction * 40f, rb.linearVelocity.y, 0f);
+        isDashing = true;
+        dashTimer = dashTime;
+    }
     void HandleGrabDrop()
     {
         if (heldBox != null)

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8275522350177850538}
   - component: {fileID: 3194928718686285834}
   - component: {fileID: -1192690577198069284}
+  - component: {fileID: -1173625803889832328}
   m_Layer: 0
   m_Name: LowerBody_Prefab
   m_TagString: Untagged
@@ -154,3 +155,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LowerBodyMove
   moveSpeed: 5
+--- !u!114 &-1173625803889832328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5814215335287250154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aa34bc8d88dbb041a353fbf08250637, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dashable
