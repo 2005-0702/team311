@@ -159,12 +159,29 @@ public class Player : MonoBehaviour
     }
 
     // プレイヤーが押しつぶされた時に呼ばれるメソッドを追加
+    [Header("Squash Settings")]
+    public float squashedScaleY = 0.2f;   // 縦の潰れ具合
+    public float squashedScaleX = 2.0f;   // 横の広がり
+    public float recoveryDelay = 1.5f;    // 復活までの秒数
+
+    bool isSquashed = false;
+    Vector3 originalScale;
     public void Squash()
     {
+        if (isSquashed) return;
+        isSquashed = true;
+
+
         // ここに「ぺしゃんこ」になった時の処理を記述
         // 例: ゲームオーバー処理やアニメーション再生など
         Debug.Log("Player was squashed!");
         // 必要に応じて追加の処理を実装してください
+        originalScale = transform.localScale;
+        transform.localScale = new Vector3(
+            originalScale.x * 2.0f,
+            originalScale.y * 0.2f,
+            originalScale.z
+        );
     }
 
     public void StartDash(float direction)
