@@ -12,13 +12,16 @@ public class Box : MonoBehaviour
 
     Rigidbody rb;
     bool isHeld = false;
+    Collider myCollider;
+    Collider[] playerColliders; // 持ち主の全コライダーを記憶用
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        myCollider = GetComponent<Collider>();
     }
 
-    // Playerから呼ばれるメソッド
+    // Playerから呼ばめるメソッド
     public void TryPickup(Transform player, Transform playerHoldPoint)
     {
         if (isHeld) return;
@@ -27,6 +30,16 @@ public class Box : MonoBehaviour
         rb.isKinematic = true;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
+
+        // プレイヤーと箱の間の当たり判定を無視する（自分自身を突き抜けないように）
+        playerColliders = player.GetComponentsInChildren<Collider>();
+        if (playerColliders != null && myCollider != null)
+        {
+            foreach (var pc in playerColliders)
+            {
+                Physics.IgnoreCollision(myCollider, pc, true);
+            }
+        }
 
         if (playerHoldPoint != null)
         {
@@ -57,6 +70,16 @@ public class Box : MonoBehaviour
         // 少し前方に力を与えて自然に落ちるようにする（プレイヤーが動いている場合の慣性）
         var forward = player.forward;
         rb.AddForce(forward * dropForwardImpulse, ForceMode.Impulse);
+
+        // 当たり判定の無視を解除
+        if (playerColliders != null && myCollider != null)
+        {
+            foreach (var pc in playerColliders)
+            {
+                if (pc != null) Physics.IgnoreCollision(myCollider, pc, false);
+            }
+            playerColliders = null;
+        }
 
         isHeld = false;
     }
