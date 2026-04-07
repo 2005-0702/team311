@@ -7,13 +7,10 @@ public class Goal : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // 1. 何かが触れたら必ずログを出す
-        Debug.Log("何かがゴールに触れました！名前: " + other.name);
-
-        if (other.CompareTag("Player"))
+        // Tag判定ではなく、名前に「Player」という文字が含まれているかチェックする
+        if (other.name.Contains("Player"))
         {
-            // 2. プレイヤーだと判定されたらログを出す
-            Debug.Log("プレイヤーだと認識しました。シーンを切り替えます。");
+            Debug.Log("プレイヤー（クローン含む）を検知しました！");
             SceneManager.LoadScene(nextSceneName);
         }
     }
