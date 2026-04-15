@@ -43,7 +43,17 @@ public class Player : MonoBehaviour
         float h = Input.GetAxis("Horizontal");
         Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
         rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
-       
+
+        // --- 向き反転処理 ---
+        if (h > 0)
+        {
+            transform.localScale = new Vector3(1, 1, 1);
+        }
+        else if (h < 0)
+        {
+            transform.localScale = new Vector3(-1, 1, 1);
+        }
+
         // --- ジャンプ処理 ---
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
