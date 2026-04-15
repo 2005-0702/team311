@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class Player : MonoBehaviour
 {
@@ -153,7 +154,7 @@ public class Player : MonoBehaviour
     [Header("Squash Settings")]
     public float squashedScaleY = 0.2f;   // 縦の潰れ具合
     public float squashedScaleX = 2.0f;   // 横の広がり
-    public float recoveryDelay = 1.5f;    // 復活までの秒数
+    public float recoveryDelay = 4f;    // 復活までの秒数
 
     bool isSquashed = false;
     Vector3 originalScale;
@@ -173,6 +174,24 @@ public class Player : MonoBehaviour
             originalScale.y * 0.2f,
             originalScale.z
         );
+        // 一定時間後に元に戻すコルーチン開始
+        StartCoroutine(RecoverFromSquash());
+    }
+
+    IEnumerator RecoverFromSquash()
+    {
+        // 待機
+        yield return new WaitForSeconds(recoveryDelay);
+
+        // スケールを元に戻す
+        transform.localScale = originalScale;
+
+        // 状態フラグ解除
+        isSquashed = false;
+
+        isGrounded = true;
+
+        Debug.Log("Player recovered from squash!");
     }
 
     public void StartDash(float direction)
