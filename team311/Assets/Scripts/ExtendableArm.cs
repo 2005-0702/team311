@@ -48,10 +48,9 @@ public class ExtendableArm : MonoBehaviour
         Vector3 targetDir = mouseWorldPos - transform.position;
         targetDir.z = 0; // 奥行きは無視（サイドビューを想定）
 
-        // プレイヤーの正面方向（親オブジェクトなどから取得。ここでは簡易的にスケールで判定）
-        float facingDir = 1f;
-        if (transform.root != null) 
-            facingDir = Mathf.Sign(transform.root.localScale.x);
+        // プレイヤーの向きを親オブジェクトから取得
+        float facingDir = Mathf.Sign(transform.parent.localScale.x);
+
 
         // 背中側（向きと逆）を向こうとしたら制限をかける
         bool isBehind = Mathf.Sign(targetDir.x) != Mathf.Sign(facingDir);
@@ -66,6 +65,9 @@ public class ExtendableArm : MonoBehaviour
         {
             transform.right = targetDir.normalized;
         }
+
+        // プレイヤーの向きに合わせて肩の向きを反転
+        transform.localScale = new Vector3(Mathf.Sign(transform.parent.localScale.x), 1, 1);
     }
 
     void UpdateArmMovement()

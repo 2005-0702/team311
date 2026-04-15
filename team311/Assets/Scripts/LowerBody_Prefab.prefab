@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 3194928718686285834}
   - component: {fileID: -1192690577198069284}
   - component: {fileID: -1173625803889832328}
+  - component: {fileID: -2265084394824869520}
   m_Layer: 0
   m_Name: LowerBody_Prefab
   m_TagString: Untagged
@@ -167,3 +168,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aa34bc8d88dbb041a353fbf08250637, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Dashable
+--- !u!114 &-2265084394824869520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5814215335287250154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f962c6b7d55ac34aa909088b0541ab3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player
+  moveSpeed: 8
+  jumpForce: 7
+  holdPoint: {fileID: 0}
+  pickupRange: 1.5
+  upperBodyPrefab: {fileID: 0}
+  lowerBodyPrefab: {fileID: 0}
+  squashedScaleY: 0.2
+  squashedScaleX: 2
+  recoveryDelay: 4
