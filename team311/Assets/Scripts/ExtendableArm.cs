@@ -15,6 +15,9 @@ public class ExtendableArm : MonoBehaviour
     public float extensionSpeed = 15f; // 伸びる速さ
     public float retractionSpeed = 20f; // 縮む速さ
     public LayerMask obstacleLayer;    // 貫通させないレイヤー
+    [Header("Visual Settings")]
+    public float armThickness = 0.5f;  // 腕の太さ
+    public float handSize = 1.0f;      // 手の大きさ
 
     private float currentLength = 0f;
     private bool isExtending = false;
@@ -99,23 +102,34 @@ public class ExtendableArm : MonoBehaviour
 
     void UpdateArmVisuals()
     {
-        if (armVisual != null)
-        {
-            // 円柱（Cylinder）の高さを調整
-            float scaleY = currentLength / 2f;
-            armVisual.localScale = new Vector3(armVisual.localScale.x, scaleY, armVisual.localScale.z);
-            
-            // X軸方向に伸びるように位置を調整
-            armVisual.localPosition = new Vector3(currentLength / 2f, 0, 0);
-            
-            // 円柱が右（X軸）を向くように回転（Z軸周りに-90度回転）
-            armVisual.localRotation = Quaternion.Euler(0, 0, -90);
-        }
-
+        // 1. 手（HandVisual）の位置を更新
         if (handVisual != null)
         {
-            // 手の先端をX軸方向の現在の長さの位置に配置
-            handVisual.localPosition = new Vector3(currentLength, 0, 0);
+            float lossyScaleX = Mathf.Abs(transform.lossyScale.x);
+            if (lossyScaleX < 0.01f) lossyScaleX = 1f;
+
+            handVisual.localPosition = new Vector3(currentLength / lossyScaleX, 0, 0);
+            
+            // 手の大きさを反映
+            handVisual.localScale = Vector3.one * handSize;
+        }
+
+        // 2. 腕（ArmVisual）を表示。手と肩の距離に合わせて伸縮させる
+        if (armVisual != null && handVisual != null)
+        {
+            // 手のローカル位置を基準にする
+            float localDist = handVisual.localPosition.x;
+
+            float halfDist = localDist / 2f;
+
+            // 長さを設定（Y軸を長さとして使用）、太さを X, Z に適用
+            armVisual.localScale = new Vector3(armThickness, Mathf.Abs(halfDist), armThickness);
+            
+            // 位置を設定
+            armVisual.localPosition = new Vector3(halfDist, 0, 0);
+            
+            // 向きを調整
+            armVisual.localRotation = Quaternion.Euler(0, 0, -90);
         }
     }
 }
