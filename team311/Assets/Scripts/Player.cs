@@ -22,10 +22,6 @@ public class Player : MonoBehaviour
     Rigidbody rb;
     bool isGrounded;
 
-    bool isDashing = false;
-    float dashTime = 0.1f;
-    float dashTimer = 0f;
-
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -33,15 +29,6 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        // --- 潰れている間は操作不能 ---
-        //if (isSquashed)
-            //return;
-
-        Dashable dash = GetComponent<Dashable>();
-        if (dash != null && dash.IsDashing())
-        {
-            return;
-        }
 
         // --- 移動処理 ---
         float h = Input.GetAxis("Horizontal");
@@ -210,12 +197,5 @@ public class Player : MonoBehaviour
         isGrounded = true;
 
         Debug.Log("Player recovered from squash!");
-    }
-
-    public void StartDash(float direction)
-    {
-        rb.linearVelocity = new Vector3(direction * 80f, rb.linearVelocity.y, 0);
-        isDashing = true;
-        dashTimer = dashTime;
     }
 }
