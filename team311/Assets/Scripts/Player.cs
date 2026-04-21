@@ -29,19 +29,23 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+
         // --- 移動処理 ---
         float h = Input.GetAxis("Horizontal");
         Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
         rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
 
         // --- 向き反転処理 ---
-        if (h > 0)
+        if (!isSquashed)
         {
-            transform.localScale = new Vector3(1, 1, 1);
-        }
-        else if (h < 0)
-        {
-            transform.localScale = new Vector3(-1, 1, 1);
+            if (h > 0)
+            {
+                transform.localScale = new Vector3(1, 1, 1);
+            }
+            else if (h < 0)
+            {
+                transform.localScale = new Vector3(-1, 1, 1);
+            }
         }
 
         // --- ジャンプ処理 ---
@@ -154,7 +158,7 @@ public class Player : MonoBehaviour
     [Header("Squash Settings")]
     public float squashedScaleY = 0.2f;   // 縦の潰れ具合
     public float squashedScaleX = 2.0f;   // 横の広がり
-    public float recoveryDelay = 4f;    // 復活までの秒数
+    public float recoveryDelay = 8f;    // 復活までの秒数
 
     bool isSquashed = false;
     Vector3 originalScale;
@@ -163,6 +167,7 @@ public class Player : MonoBehaviour
         if (isSquashed) return;
         isSquashed = true;
 
+        isGrounded = true;
 
         // ここに「ぺしゃんこ」になった時の処理を記述
         // 例: ゲームオーバー処理やアニメーション再生など
