@@ -27,6 +27,9 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
+    // プレイヤーの向き（1: 右, -1: 左）
+    public int FacingDir { get; private set; } = 1;
+
     void Update()
     {
 
@@ -38,13 +41,17 @@ public class Player : MonoBehaviour
         // --- 向き反転処理 ---
         if (!isSquashed)
         {
-            if (h > 0)
+            if (h > 0) FacingDir = 1;
+            else if (h < 0) FacingDir = -1;
+
+            foreach (Transform child in transform)
             {
-                transform.localScale = new Vector3(1, 1, 1);
-            }
-            else if (h < 0)
-            {
-                transform.localScale = new Vector3(-1, 1, 1);
+                // 「Visual」という名前を含むオブジェクト（見た目）だけを反転させる
+                // 肩（Shoulder）やカメラは反転させない
+                if (child.name.Contains("Visual"))
+                {
+                    child.localScale = new Vector3(FacingDir, 1f, 1f);
+                }
             }
         }
 
@@ -70,7 +77,21 @@ public class Player : MonoBehaviour
         }
         else
         {
-            Vector3 checkPos = transform.position + transform.forward * 0.5f;
+            // --- 掴み判定の位置を決定 ---
+            Vector3 checkPos;
+            ExtendableArm arm = GetComponentInChildren<ExtendableArm>();
+            
+            // 腕が伸びている（手の位置が肩から離れている）場合は、手の位置で判定
+            if (arm != null && arm.handVisual != null && Vector3.Distance(arm.transform.position, arm.handVisual.position) > 0.5f)
+            {
+                checkPos = arm.handVisual.position;
+            }
+            else
+            {
+                // 腕が縮んでいる時は、通常通りプレイヤーの正面で判定
+                checkPos = transform.position + transform.forward * 0.5f;
+            }
+
             Collider[] colliders = Physics.OverlapSphere(checkPos, pickupRange);
             foreach (var col in colliders)
             {
@@ -78,7 +99,18 @@ public class Player : MonoBehaviour
                 if (box == null) box = col.GetComponentInParent<Box>();
                 if (box != null)
                 {
-                    box.TryPickup(transform, holdPoint);
+                    // 腕が伸びている場合は「手の先（arm.handVisual）」に付けるように指定
+                    bool isUsingArm = arm != null && arm.handVisual != null && Vector3.Distance(arm.transform.position, arm.handVisual.position) > 0.5f;
+                    
+                    if (isUsingArm)
+                    {
+                        box.TryPickup(transform, holdPoint, arm.handVisual);
+                    }
+                    else
+                    {
+                        box.TryPickup(transform, holdPoint);
+                    }
+
                     heldBox = box;
                     break;
                 }

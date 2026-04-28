@@ -13,6 +13,9 @@ public class MovingHazard : MonoBehaviour
 
     private Vector3 startPos;
     private Rigidbody rb;
+    private bool isActive = true;
+    private float timeOffset = 0f;
+    private float pauseStartTime = 0f;
 
     void Start()
     {
@@ -22,8 +25,11 @@ public class MovingHazard : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!isActive) return;
+
         // Mathf.PingPong を使って 0〜1 の間のウェイト値を計算
-        float t = Mathf.PingPong(Time.time * speed / distance, 1f);
+        float adjustedTime = Time.time - timeOffset;
+        float t = Mathf.PingPong(adjustedTime * speed / distance, 1f);
         
         // イージング（滑らかな動き）を入れたい場合はここを調整
         // t = Mathf.SmoothStep(0, 1, t);
@@ -43,9 +49,29 @@ public class MovingHazard : MonoBehaviour
     // Squasherスクリプトが「今は下に動いているか」を判定するために使用
     public bool IsMovingDown()
     {
+        if (!isActive) return false;
+
         // 簡易的に：前回の位置と比較するか、PingPongの計算式から進行方向を割り出す
-        // ここでは、moveDirectionが「上」の場合、tが減少していれば「下移動」とみなします。
-        float cycle = Time.time * speed / distance;
+        float cycle = (Time.time - timeOffset) * speed / distance;
         return (Mathf.FloorToInt(cycle) % 2 == 1); // PingPongの後半サイクル（戻り）
+    }
+
+    // スイッチから呼ばれる命令
+    public void SetActivate(bool state)
+    {
+        if (isActive == state) return;
+
+        if (state)
+        {
+            // 再開時：停止していた時間をオフセットに加算して、位置が飛ばないようにする
+            timeOffset += Time.time - pauseStartTime;
+        }
+        else
+        {
+            // 停止時：停止した瞬間の時間を記録
+            pauseStartTime = Time.time;
+        }
+
+        isActive = state;
     }
 }
