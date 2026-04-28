@@ -14,6 +14,7 @@ public class Box : MonoBehaviour
     bool isHeld = false;
     Collider myCollider;
     Collider[] playerColliders; // 持ち主の全コライダーを記憶用
+    Transform targetHoldPoint;  // 最終的な持ち位置
 
     void Awake()
     {
@@ -22,16 +23,16 @@ public class Box : MonoBehaviour
     }
 
     // Playerから呼ばめるメソッド
-    public void TryPickup(Transform player, Transform playerHoldPoint)
+    public void TryPickup(Transform player, Transform playerHoldPoint, Transform hand = null)
     {
         if (isHeld) return;
 
-        // 物理を停止して親子付け
+        // 物理を停止
         rb.isKinematic = true;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        // プレイヤーと箱の間の当たり判定を無視する（自分自身を突き抜けないように）
+        // 当たり判定の無視
         playerColliders = player.GetComponentsInChildren<Collider>();
         if (playerColliders != null && myCollider != null)
         {
@@ -41,8 +42,18 @@ public class Box : MonoBehaviour
             }
         }
 
-        if (playerHoldPoint != null)
+        targetHoldPoint = playerHoldPoint;
+
+        if (hand != null)
         {
+            // まずは手の先に親子付け（引き寄せ演出用）
+            transform.SetParent(hand);
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+        }
+        else if (playerHoldPoint != null)
+        {
+            // 通常のキャッチ：手元に親子付け
             transform.SetParent(playerHoldPoint);
             transform.position = playerHoldPoint.position;
             transform.rotation = playerHoldPoint.rotation;
@@ -50,12 +61,25 @@ public class Box : MonoBehaviour
         else
         {
             transform.SetParent(player);
-            // HoldPointがない場合は少し上に持ち上げる
             transform.localPosition = new Vector3(0f, 0.6f, 0.8f);
             transform.localRotation = Quaternion.identity;
         }
 
         isHeld = true;
+    }
+
+    void Update()
+    {
+        if (isHeld && targetHoldPoint != null && transform.parent != targetHoldPoint)
+        {
+            // 手元（HoldPoint）に十分近づいたら、正式に持ち位置へ移動
+            if (Vector3.Distance(transform.position, targetHoldPoint.position) < 0.2f)
+            {
+                transform.SetParent(targetHoldPoint);
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
+            }
+        }
     }
 
     // Playerから呼ばれるメソッド

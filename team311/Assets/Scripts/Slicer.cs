@@ -6,8 +6,17 @@ using UnityEngine;
 /// </summary>
 public class Slicer : MonoBehaviour
 {
+    private bool isActive = true;
+
+    public void SetActivate(bool state)
+    {
+        isActive = state;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
+        if (!isActive) return;
+
         // 触れたオブジェクトが Player かどうかを確認
         Player player = other.GetComponent<Player>();
         

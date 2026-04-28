@@ -51,9 +51,13 @@ public class ExtendableArm : MonoBehaviour
         Vector3 targetDir = mouseWorldPos - transform.position;
         targetDir.z = 0; // 奥行きは無視（サイドビューを想定）
 
-        // プレイヤーの向きを親オブジェクトから取得
-        float facingDir = Mathf.Sign(transform.parent.localScale.x);
+        // 肩（自身）のスケールは常に1に固定（BoxColliderのエラーと反転のバグを防ぐ）
+        transform.localScale = Vector3.one;
 
+        // プレイヤーの向きを取得
+        float facingDir = 1f;
+        Player p = transform.root.GetComponent<Player>();
+        if (p != null) facingDir = p.FacingDir;
 
         // 背中側（向きと逆）を向こうとしたら制限をかける
         bool isBehind = Mathf.Sign(targetDir.x) != Mathf.Sign(facingDir);
@@ -69,8 +73,7 @@ public class ExtendableArm : MonoBehaviour
             transform.right = targetDir.normalized;
         }
 
-        // プレイヤーの向きに合わせて肩の向きを反転
-        transform.localScale = new Vector3(Mathf.Sign(transform.parent.localScale.x), 1, 1);
+        // 向きの反転処理は不要になったので削除（Player.csの回転で対応）
     }
 
     void UpdateArmMovement()
@@ -105,10 +108,8 @@ public class ExtendableArm : MonoBehaviour
         // 1. 手（HandVisual）の位置を更新
         if (handVisual != null)
         {
-            float lossyScaleX = Mathf.Abs(transform.lossyScale.x);
-            if (lossyScaleX < 0.01f) lossyScaleX = 1f;
-
-            handVisual.localPosition = new Vector3(currentLength / lossyScaleX, 0, 0);
+            // シンプルに距離をそのまま使用（スケール反転がなくなったため）
+            handVisual.localPosition = new Vector3(currentLength, 0, 0);
             
             // 手の大きさを反映
             handVisual.localScale = Vector3.one * handSize;
