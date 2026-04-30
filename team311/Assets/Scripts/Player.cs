@@ -20,25 +20,66 @@ public class Player : MonoBehaviour
     bool isSplit = false;
 
     Rigidbody rb;
+    Collider col; // 自身のコライダー
     bool isGrounded;
+    bool isCrouching;
+
+    [Header("Ground Check")]
+    public float groundCheckRadius = 0.3f;
+    public LayerMask groundLayer; // 地面とみなすレイヤー
+
+    // しゃがみ時の設定
+    float originalColliderHeight;
+    Vector3 originalColliderCenter;
+    float colliderBottomY; // コライダーの底面のローカルY座標
+
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        col = GetComponent<Collider>();
+        
+        // 当たり判定の初期値を記録
+        if (col is BoxCollider box)
+        {
+            originalColliderHeight = box.size.y;
+            originalColliderCenter = box.center;
+        }
+        else if (col is CapsuleCollider cap)
+        {
+            originalColliderHeight = cap.height;
+            originalColliderCenter = cap.center;
+        }
+        
+        // 底面の位置を計算（ここを固定する）
+        colliderBottomY = originalColliderCenter.y - (originalColliderHeight / 2f);
     }
 
     // プレイヤーの向き（1: 右, -1: 左）
     public int FacingDir { get; private set; } = 1;
+    
+    // しゃがみ状態を外部から参照できるように公開
+    public bool IsCrouching => isCrouching;
 
     void Update()
     {
+        // 接地判定を毎フレーム実行
+        CheckGrounded();
 
         // --- 移動処理 ---
         float h = Input.GetAxis("Horizontal");
         Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
         rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
 
-        // --- 向き反転処理 ---
+        // --- しゃがみ処理 ---
+        // Sキーが押されているか、あるいは頭上に障害物がある場合はしゃがみ状態を維持
+        bool sKeyPressed = Input.GetKey(KeyCode.S);
+        bool spaceAbove = !Physics.Raycast(transform.position, Vector3.up, originalColliderHeight * 0.8f, groundLayer == 0 ? ~0 : groundLayer);
+        
+        isCrouching = sKeyPressed || !spaceAbove;
+        float visualScaleY = isCrouching ? 0.5f : 1.0f;
+
+        // --- 向きとしゃがみのビジュアル反映 ---
         if (!isSquashed)
         {
             if (h > 0) FacingDir = 1;
@@ -46,12 +87,29 @@ public class Player : MonoBehaviour
 
             foreach (Transform child in transform)
             {
-                // 「Visual」という名前を含むオブジェクト（見た目）だけを反転させる
-                // 肩（Shoulder）やカメラは反転させない
                 if (child.name.Contains("Visual"))
                 {
-                    child.localScale = new Vector3(FacingDir, 1f, 1f);
+                    child.localScale = new Vector3(FacingDir, visualScaleY, 1f);
                 }
+            }
+        }
+
+        // しゃがみに合わせて当たり判定のサイズを変える
+        if (col != null)
+        {
+            float newHeight = originalColliderHeight * visualScaleY;
+            // 底面(colliderBottomY)が変わらないように中心(center)を再計算
+            float newCenterY = colliderBottomY + (newHeight / 2f);
+
+            if (col is BoxCollider box)
+            {
+                box.size = new Vector3(box.size.x, newHeight, box.size.z);
+                box.center = new Vector3(originalColliderCenter.x, newCenterY, originalColliderCenter.z);
+            }
+            else if (col is CapsuleCollider cap)
+            {
+                cap.height = newHeight;
+                cap.center = new Vector3(originalColliderCenter.x, newCenterY, originalColliderCenter.z);
             }
         }
 
@@ -168,16 +226,32 @@ public class Player : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    void CheckGrounded()
     {
-        isGrounded = true;
-
+        // 足元の位置を計算（少しだけ内側に浮かせて判定の安定性を高める）
+        Vector3 footPos = transform.TransformPoint(new Vector3(0, colliderBottomY + 0.1f, 0));
         
+        // 足元に小さな球を作って判定
+        Collider[] cols = Physics.OverlapSphere(footPos, groundCheckRadius, groundLayer == 0 ? ~0 : groundLayer);
+        
+        isGrounded = false;
+        foreach (var c in cols)
+        {
+            // 自分自身やトリガー、または「のびーる腕」のパーツは除外
+            if (c.gameObject != gameObject && !c.isTrigger && !c.name.Contains("Visual") && !c.name.Contains("Hand"))
+            {
+                isGrounded = true;
+                break;
+            }
+        }
     }
 
-    private void OnCollisionExit(Collision collision)
+    private void OnDrawGizmosSelected()
     {
-        isGrounded = false;
+        // エディタ上で接地判定の範囲を可視化（デバッグ用）
+        Gizmos.color = Color.red;
+        Vector3 footPos = transform.TransformPoint(new Vector3(0, colliderBottomY, 0));
+        Gizmos.DrawWireSphere(footPos, groundCheckRadius);
     }
 
     // プロパティとして isGrounded を公開
