@@ -22,33 +22,72 @@ public class OneWayPlatform : MonoBehaviour
 
     private void CheckCollision(Collider other)
     {
-        Rigidbody rb = other.GetComponent<Rigidbody>();
-        if (rb == null) rb = other.GetComponentInParent<Rigidbody>();
+        Rigidbody rb = other.attachedRigidbody;
+        if (rb == null) return;
 
-        // 足元の高さ
-        float objectBottom = other.bounds.min.y;
+        Collider[] allPlayerColliders = rb.GetComponentsInChildren<Collider>();
+
+        // 【修正】足元の高さ（一番低い位置）を正しく計算
+        float objectBottom = Mathf.Infinity;
+        foreach (var c in allPlayerColliders)
+        {
+            if (!c.isTrigger) objectBottom = Mathf.Min(objectBottom, c.bounds.min.y);
+        }
+        if (objectBottom == Mathf.Infinity) objectBottom = other.bounds.min.y;
+
         // 足場の表面の高さ
         float platformTop = solidCollider.bounds.max.y;
 
-        // 次のいずれかの条件を満たせば「すり抜け」にする：
-        // 1. 足元が足場の表面より低い位置にある
-        // 2. あるいは、上方向にある程度の速度で移動している
-        bool isBelow = objectBottom < platformTop - 0.1f;
-        bool isMovingUp = (rb != null && rb.linearVelocity.y > 0.1f);
+        Player player = rb.GetComponent<Player>();
+        bool isCrouching = (player != null && player.IsCrouching);
 
-        if (isBelow || isMovingUp)
+        // 条件判定
+        // 下から来ているか、上向きに動いているか、しゃがんでいるなら「無視」
+        bool isBelow = objectBottom < platformTop - 0.1f;
+        bool isMovingUp = rb.linearVelocity.y > 0.01f;
+
+        if (isBelow || isMovingUp || isCrouching)
         {
-            Physics.IgnoreCollision(solidCollider, other, true);
+            foreach (var pc in allPlayerColliders)
+            {
+                if (pc != solidCollider) Physics.IgnoreCollision(solidCollider, pc, true);
+            }
         }
         else
         {
-            Physics.IgnoreCollision(solidCollider, other, false);
+            // 完全に上に乗り切っている時だけ衝突を有効にする
+            if (objectBottom > platformTop - 0.05f)
+            {
+                foreach (var pc in allPlayerColliders)
+                {
+                    if (pc != solidCollider) Physics.IgnoreCollision(solidCollider, pc, false);
+                }
+            }
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        // トリガーから完全に離れたら、念のため衝突判定を戻しておく
-        Physics.IgnoreCollision(solidCollider, other, false);
+        Rigidbody rb = other.attachedRigidbody;
+        if (rb != null)
+        {
+            Collider[] allPlayerColliders = rb.GetComponentsInChildren<Collider>();
+            
+            // 出口での判定：足元が床より高い位置にある時だけ当たり判定を戻す
+            // これにより、下から上に突き抜ける瞬間に引っかかるのを防ぎます
+            float objectBottom = Mathf.Infinity;
+            foreach (var c in allPlayerColliders)
+            {
+                if (!c.isTrigger) objectBottom = Mathf.Min(objectBottom, c.bounds.min.y);
+            }
+
+            if (objectBottom > solidCollider.bounds.max.y - 0.1f)
+            {
+                foreach (var pc in allPlayerColliders)
+                {
+                    if (pc != solidCollider) Physics.IgnoreCollision(solidCollider, pc, false);
+                }
+            }
+        }
     }
 }
