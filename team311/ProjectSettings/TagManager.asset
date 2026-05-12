@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Ground
   - Fan
+  - Trap
   layers:
   - Default
   - TransparentFX
