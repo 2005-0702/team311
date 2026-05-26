@@ -5,6 +5,8 @@ public class Player : MonoBehaviour
 {
     public float moveSpeed = 8f;
     public float jumpForce = 7f;
+    public float fallMultiplier = 3.0f;
+    public float lowJumpMultiplier = 2.0f;
 
     [Header("Hold Settings")]
     public Transform holdPoint;
@@ -117,6 +119,21 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+
+        // --- スマートジャンプ（滞空をなくす） ---
+        if (!isGrounded)
+        {
+            // 落下を速くする（滞空を消す）
+            if (rb.linearVelocity.y < 0)
+            {
+                rb.linearVelocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+            }
+            // 上昇を短く切る（ふわっと上がらない）
+            else if (rb.linearVelocity.y > 0 && !Input.GetKey(KeyCode.Space))
+            {
+                rb.linearVelocity += Vector3.up * Physics.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+            }
         }
 
         // --- 箱を持つ・離す処理（Eキー） ---

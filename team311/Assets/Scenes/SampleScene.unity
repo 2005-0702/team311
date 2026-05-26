@@ -7278,7 +7278,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
   moveSpeed: 8
-  jumpForce: 8
+  jumpForce: 7
+  fallMultiplier: 3
+  lowJumpMultiplier: 1
   holdPoint: {fileID: 0}
   pickupRange: 1.5
   upperBodyPrefab: {fileID: 5576607228205285948, guid: 2998f541195593649890c22252ef8d8a, type: 3}
