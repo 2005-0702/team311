@@ -18,7 +18,7 @@ public class Player : MonoBehaviour
     public GameObject upperBodyPrefab;
     [Tooltip("切断された後に生成する下半身のプレハブ")]
     public GameObject lowerBodyPrefab;
-    
+
     bool isSplit = false;
 
     Rigidbody rb;
@@ -35,12 +35,14 @@ public class Player : MonoBehaviour
     Vector3 originalColliderCenter;
     float colliderBottomY; // コライダーの底面のローカルY座標
 
+    // ジャンプ入力を物理ステップで処理するためのフラグ
+    bool jumpRequested = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
-        
+
         // 当たり判定の初期値を記録
         if (col is BoxCollider box)
         {
@@ -52,14 +54,14 @@ public class Player : MonoBehaviour
             originalColliderHeight = cap.height;
             originalColliderCenter = cap.center;
         }
-        
+
         // 底面の位置を計算（ここを固定する）
         colliderBottomY = originalColliderCenter.y - (originalColliderHeight / 2f);
     }
 
     // プレイヤーの向き（1: 右, -1: 左）
     public int FacingDir { get; private set; } = 1;
-    
+
     // しゃがみ状態を外部から参照できるように公開
     public bool IsCrouching => isCrouching;
 
@@ -77,7 +79,7 @@ public class Player : MonoBehaviour
         // Sキーが押されているか、あるいは頭上に障害物がある場合はしゃがみ状態を維持
         bool sKeyPressed = Input.GetKey(KeyCode.S);
         bool spaceAbove = !Physics.Raycast(transform.position, Vector3.up, originalColliderHeight * 0.8f, groundLayer == 0 ? ~0 : groundLayer);
-        
+
         isCrouching = sKeyPressed || !spaceAbove;
         float visualScaleY = isCrouching ? 0.5f : 1.0f;
 
@@ -115,10 +117,11 @@ public class Player : MonoBehaviour
             }
         }
 
-        // --- ジャンプ処理 ---
+        // --- ジャンプ入力取得（物理ステップで処理） ---
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            // フラグを立てて FixedUpdate で実際にジャンプを発生させる
+            jumpRequested = true;
         }
 
         // --- スマートジャンプ（滞空をなくす） ---
@@ -143,6 +146,18 @@ public class Player : MonoBehaviour
         }
     }
 
+    [System.Obsolete]
+    void FixedUpdate()
+    {
+        // 固定フレームでジャンプを処理（物理の安定性向上）
+        if (jumpRequested)
+        {
+            // 確実に上向きの速度を与える（AddForce でも良いが速度直接設定で確実に動く）
+            rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
+            jumpRequested = false;
+        }
+    }
+
     void HandleGrabDrop()
     {
         if (heldBox != null)
@@ -155,7 +170,7 @@ public class Player : MonoBehaviour
             // --- 掴み判定の位置を決定 ---
             Vector3 checkPos;
             ExtendableArm arm = GetComponentInChildren<ExtendableArm>();
-            
+
             // 腕が伸びている（手の位置が肩から離れている）場合は、手の位置で判定
             if (arm != null && arm.handVisual != null && Vector3.Distance(arm.transform.position, arm.handVisual.position) > 0.5f)
             {
@@ -176,7 +191,7 @@ public class Player : MonoBehaviour
                 {
                     // 腕が伸びている場合は「手の先（arm.handVisual）」に付けるように指定
                     bool isUsingArm = arm != null && arm.handVisual != null && Vector3.Distance(arm.transform.position, arm.handVisual.position) > 0.5f;
-                    
+
                     if (isUsingArm)
                     {
                         box.TryPickup(transform, holdPoint, arm.handVisual);
@@ -223,7 +238,7 @@ public class Player : MonoBehaviour
             if (cam != null)
             {
                 cam.transform.SetParent(upper.transform);
-                cam.transform.localPosition = new Vector3(0, 2, -5); 
+                cam.transform.localPosition = new Vector3(0, 2, -5);
                 cam.transform.localRotation = Quaternion.Euler(15, 0, 0);
             }
         }
@@ -247,10 +262,11 @@ public class Player : MonoBehaviour
     {
         // 足元の位置を計算（少しだけ内側に浮かせて判定の安定性を高める）
         Vector3 footPos = transform.TransformPoint(new Vector3(0, colliderBottomY + 0.1f, 0));
-        
+
         // 足元に小さな球を作って判定
         Collider[] cols = Physics.OverlapSphere(footPos, groundCheckRadius, groundLayer == 0 ? ~0 : groundLayer);
-        
+
+        bool lastGrounded = isGrounded;
         isGrounded = false;
         foreach (var c in cols)
         {
@@ -261,6 +277,16 @@ public class Player : MonoBehaviour
                 break;
             }
         }
+
+        // 接地状態が変化したときのみログを出す（ログの洪水を防ぐ）
+        if (isGrounded != lastGrounded)
+        {
+            Debug.Log($"CheckGrounded: isGrounded changed -> {isGrounded} (overlapCount={cols.Length})");
+        }
+
+        // エディタで確認しやすいようにワイヤー表示（OnDrawGizmosSelectedでも確認可）
+        Debug.DrawLine(footPos, footPos + Vector3.up * 0.1f, isGrounded ? Color.green : Color.red, 0.1f);
+        Debug.DrawRay(transform.position, Vector3.up * (originalColliderHeight * 0.8f), Color.yellow, 0.1f);
     }
 
     private void OnDrawGizmosSelected()
