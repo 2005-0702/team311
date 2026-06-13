@@ -7,11 +7,24 @@ public class Goal : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Tag判定ではなく、名前に「Player」という文字が含まれているかチェックする
-        if (other.name.Contains("Player"))
+        //親オブジェクトも含めて「Player」スクリプトがついているかチェック
+        Player player = other.GetComponent<Player>();
+        if (player == null) player = other.GetComponentInParent<Player>();
+
+        // プレイヤーが存在する場合のみ処理
+        if (player != null)
         {
-            Debug.Log("プレイヤー（クローン含む）を検知しました！");
-            SceneManager.LoadScene(nextSceneName);
+            //「鍵を持っているか」をプレイヤーに問い合わせる
+            if (player.HasKey)
+            {
+                Debug.Log("鍵を持っているので、ステージクリア！");
+                SceneManager.LoadScene(nextSceneName);
+            }
+            else
+            {
+                // 鍵を持っていない場合の処理（お好みで音を鳴らしたりUIを出したり）
+                Debug.Log("鍵がありません！ステージ内の鍵を探してください。");
+            }
         }
     }
 }

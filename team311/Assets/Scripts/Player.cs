@@ -37,6 +37,8 @@ public class Player : MonoBehaviour
 
     // ジャンプ入力を物理ステップで処理するためのフラグ
     bool jumpRequested = false;
+    // 特殊アクションの勢いを消さないためのタイマー
+    private float specialActionTimer = 0f;
 
     void Start()
     {
@@ -64,6 +66,15 @@ public class Player : MonoBehaviour
 
     // しゃがみ状態を外部から参照できるように公開
     public bool IsCrouching => isCrouching;
+
+    //Player.cs の中に追加・統合するコード
+
+    [Header("空気入れギミックの設定")]
+    [SerializeField] private Vector3 normalScale = new Vector3(1, 1, 1); // 通常のサイズ
+    [SerializeField] private Vector3 inflatedScale = new Vector3(1.5f, 1.5f, 1.5f); // 膨らんだサイズ
+    [SerializeField] private float airDashSpeed = 15f; // 横ダッシュの速度
+
+    private bool isInflated = false; // 膨らんでいるかどうかのフラグ
 
     void Update()
     {
@@ -144,17 +155,126 @@ public class Player : MonoBehaviour
         {
             HandleGrabDrop();
         }
+        // 💡 膨らんでいる時だけ使える特殊アクションの入力チェック
+        if (isInflated)
+        {
+            // パターンA：空中でもう一度ジャンプキー（Spaceなど）を押したら「2段ジャンプ」
+            if (Input.GetButtonDown("Jump"))
+            {
+                AirJump();
+            }
+            // パターンB：Shiftキー（またはお好みのキー）を押したら「横ダッシュ」
+            else if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+            {
+                AirDash();
+            }
+        }
+    }
+    // 🎈 空気入れから呼び出される、膨らむ関数
+    public void Inflate()
+    {
+        if (isInflated) return; // すでに膨らんでいたら重ならない
+
+        isInflated = true;
+        transform.localScale = inflatedScale; // 見た目を大きく（プレジ機で小さくした時の逆）
+        Debug.Log("プレイヤーが膨らんだ！特殊アクションが1回使えます。");
+    }
+    // 💨 2段ジャンプを実行
+    // 💡 既存の「地面にいるか」を管理している変数（IsGroundedなど）があれば、
+    // 特殊ジャンプの瞬間にそれを一時的に false に書き換える必要があります。
+
+    private void AirJump()
+    {
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            // 通常移動を 0.3秒間 ストップさせる
+            specialActionTimer = 0.3f;
+
+            // 速度を一度リセットして、上方向に強烈な速度を直接ぶち込む
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 12f, rb.linearVelocity.z); // 12fは高さに合わせて調整してね
+        }
+
+        Deflate();
+    }
+
+    private void AirDash()
+    {
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            // 通常移動を 0.25秒間 ストップさせる（この間は勢いよく飛ぶ）
+            specialActionTimer = 0.25f;
+
+            float horizontalInput = Input.GetAxisRaw("Horizontal");
+            Vector3 dashDirection = Mathf.Abs(horizontalInput) > 0.1f
+                ? new Vector3(horizontalInput, 0f, 0f).normalized
+                : transform.forward;
+
+            // 横方向に強烈な速度を直接ぶち込む（Y軸の重さは残すか、0fにして真横に飛ばす）
+            rb.linearVelocity = new Vector3(dashDirection.x * airDashSpeed, 2f, dashDirection.z * airDashSpeed);
+        }
+
+        Deflate();
+    }
+
+    // 🧍 元の姿に戻る関数
+    private void Deflate()
+    {
+        isInflated = false;
+        transform.localScale = normalScale; // サイズを元に戻す
+        Debug.Log("空気が抜けて元に戻った。");
     }
 
     [System.Obsolete]
     void FixedUpdate()
     {
-        // 固定フレームでジャンプを処理（物理の安定性向上）
+        // ==========================================
+        // 1. 【いつでも受け付ける処理】ボタンの入力チェック
+        // ==========================================
+        // 💡 通常のジャンプボタンが押されたらフラグを立てる（警告が出ていた変数です！）
+        if (Input.GetButtonDown("Jump") && IsGrounded) // 地面にいる時だけ通常ジャンプ
+        {
+            jumpRequested = true;
+        }
+
+        // 🎈 空気入れで膨らんでいる時の特殊アクション入力
+        if (isInflated)
+        {
+            if (Input.GetButtonDown("Jump")) AirJump();
+            else if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) AirDash();
+        }
+
+
+        // ==========================================
+        // 2. 【タイマーの管理】空気入れダッシュの勢いを残す壁
+        // ==========================================
+        if (specialActionTimer > 0f)
+        {
+            specialActionTimer -= Time.deltaTime;
+            // 💡 ここでリターン(終了)せず、下に進むけど「通常移動の速度上書き」だけをパスさせる構造にします
+        }
+
+
+        // ==========================================
+        // 3. 【実際の移動・ジャンプ処理】
+        // ==========================================
+        Rigidbody rb = GetComponent<Rigidbody>();
+
+        // 🏃 通常の左右移動（タイマーが0の時だけ実行する）
+        if (specialActionTimer <= 0f)
+        {
+            float x = Input.GetAxis("Horizontal");
+            rb.linearVelocity = new Vector3(x * moveSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
+        }
+
+        // 🦘 通常のジャンプの実行（タイマーに関係なく、地面から跳べるようにここに書く！）
         if (jumpRequested)
         {
-            // 確実に上向きの速度を与える（AddForce でも良いが速度直接設定で確実に動く）
-            rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
-            jumpRequested = false;
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); // 速度リセット
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse); // 上に跳ぶ
+
+            jumpRequested = false; // 💡 使い終わったら必ず false に戻す（これで警告も消えます！）
         }
     }
 
@@ -347,4 +467,16 @@ public class Player : MonoBehaviour
 
         Debug.Log("Player recovered from squash!");
     }
+
+
+    // 鍵を持っているかどうかのフラグ
+    public bool HasKey { get; private set; } = false;
+
+    // 鍵を拾った時に呼び出す関数
+    public void PickUpKey()
+    {
+        HasKey = true;
+        Debug.Log("鍵をゲットした！");
+    }
+
 }
