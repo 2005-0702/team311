@@ -37,6 +37,8 @@ public class BlockManager : MonoBehaviour
         SwitchBlock[] blocks = FindObjectsByType<SwitchBlock>(FindObjectsSortMode.None);
         foreach (SwitchBlock block in blocks)
         {
+            // 修正箇所：以前のコードから、今回作った「RefreshState」を呼び出す形に変更！
+            // これで、各ブロックが自分の色に合わせて自動で半透明 or 不透明になります。
             block.RefreshState(isRedActive);
         }
     }

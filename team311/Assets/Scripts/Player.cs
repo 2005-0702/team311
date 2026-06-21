@@ -40,6 +40,10 @@ public class Player : MonoBehaviour
     // 特殊アクションの勢いを消さないためのタイマー
     private float specialActionTimer = 0f;
 
+    // カウンター方式をシンプルに再定義
+    private int jumpCount = 0;       // 今、空中ジャンプを何回消費したか
+    private int maxAirJumpCount = 0; // 空中で追加でジャンプできる回数（通常は0回、空気入れで1回に）
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -81,129 +85,118 @@ public class Player : MonoBehaviour
         // 接地判定を毎フレーム実行
         CheckGrounded();
 
+        // 修正：地面に着いていたら、空中ジャンプの消費数を「0」にリセットする
+        if (isGrounded)
+        {
+            jumpCount = 0;
+        }
+
+        // 特殊アクション用のタイマーカウントダウン
+        if (specialActionTimer > 0f)
+        {
+            specialActionTimer -= Time.deltaTime;
+        }
+
         // --- 移動処理 ---
         float h = Input.GetAxis("Horizontal");
-        Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
-        rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
-
-        // --- しゃがみ処理 ---
-        // Sキーが押されているか、あるいは頭上に障害物がある場合はしゃがみ状態を維持
-        bool sKeyPressed = Input.GetKey(KeyCode.S);
-        bool spaceAbove = !Physics.Raycast(transform.position, Vector3.up, originalColliderHeight * 0.8f, groundLayer == 0 ? ~0 : groundLayer);
-
-        isCrouching = sKeyPressed || !spaceAbove;
-        float visualScaleY = isCrouching ? 0.5f : 1.0f;
-
-        // --- 向きとしゃがみのビジュアル反映 ---
-        if (!isSquashed)
+        if (specialActionTimer <= 0f)
         {
-            if (h > 0) FacingDir = 1;
-            else if (h < 0) FacingDir = -1;
-
-            foreach (Transform child in transform)
-            {
-                if (child.name.Contains("Visual"))
-                {
-                    child.localScale = new Vector3(FacingDir, visualScaleY, 1f);
-                }
-            }
+            Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
+            rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
         }
 
-        // しゃがみに合わせて当たり判定のサイズを変える
-        if (col != null)
-        {
-            float newHeight = originalColliderHeight * visualScaleY;
-            // 底面(colliderBottomY)が変わらないように中心(center)を再計算
-            float newCenterY = colliderBottomY + (newHeight / 2f);
+        // （※しゃがみ処理やビジュアル反映、箱の掴み処理はそのまま残してください）
 
-            if (col is BoxCollider box)
-            {
-                box.size = new Vector3(box.size.x, newHeight, box.size.z);
-                box.center = new Vector3(originalColliderCenter.x, newCenterY, originalColliderCenter.z);
-            }
-            else if (col is CapsuleCollider cap)
-            {
-                cap.height = newHeight;
-                cap.center = new Vector3(originalColliderCenter.x, newCenterY, originalColliderCenter.z);
-            }
-        }
-
-        // --- ジャンプ入力取得（物理ステップで処理） ---
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        // ==========================================
+        // 修正：ジャンプの入力判定（通常ジャンプと2段ジャンプを完全分離）
+        // ==========================================
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            // フラグを立てて FixedUpdate で実際にジャンプを発生させる
-            jumpRequested = true;
+            if (isGrounded)
+            {
+                // ① 地面にいるなら、いつでも通常ジャンプを最優先で許可
+                jumpRequested = true;
+            }
+            else if (jumpCount < maxAirJumpCount && specialActionTimer <= 0f)
+            {
+                // ② 空中にいて、かつ空中ジャンプ可能回数が残っているなら「2段ジャンプ」を実行
+                AirJump();
+            }
         }
 
         // --- スマートジャンプ（滞空をなくす） ---
         if (!isGrounded)
         {
-            // 落下を速くする（滞空を消す）
             if (rb.linearVelocity.y < 0)
             {
                 rb.linearVelocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
             }
-            // 上昇を短く切る（ふわっと上がらない）
             else if (rb.linearVelocity.y > 0 && !Input.GetKey(KeyCode.Space))
             {
                 rb.linearVelocity += Vector3.up * Physics.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
             }
         }
 
-        // --- 箱を持つ・離す処理（Eキー） ---
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            HandleGrabDrop();
-        }
-        // 💡 膨らんでいる時だけ使える特殊アクションの入力チェック
+        // ==========================================
+        // 空気入れ状態の時の「横ダッシュ（Shift）」
+        // ==========================================
         if (isInflated)
         {
-            // パターンA：空中でもう一度ジャンプキー（Spaceなど）を押したら「2段ジャンプ」
-            if (Input.GetButtonDown("Jump"))
-            {
-                AirJump();
-            }
-            // パターンB：Shiftキー（またはお好みのキー）を押したら「横ダッシュ」
-            else if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+            // 空中でShiftを押したら横ダッシュを発動
+            if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
             {
                 AirDash();
             }
         }
     }
-    // 🎈 空気入れから呼び出される、膨らむ関数
+    void FixedUpdate()
+    {
+        // 通常ジャンプの物理実行（地面から跳び上がる瞬間のみここを通る）
+        if (jumpRequested)
+        {
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
+            jumpRequested = false;
+        }
+    }
+    // 空気入れから呼び出される、膨らむ関数
     public void Inflate()
     {
-        if (isInflated) return; // すでに膨らんでいたら重ならない
+        if (isInflated) return;
 
         isInflated = true;
-        transform.localScale = inflatedScale; // 見た目を大きく（プレジ機で小さくした時の逆）
-        Debug.Log("プレイヤーが膨らんだ！特殊アクションが1回使えます。");
+        maxAirJumpCount = 1; // 空中ジャンプを「1回」許可する
+        transform.localScale = inflatedScale;
+        Debug.Log("プレイヤーが膨らんだ！空中2段ジャンプ or Shiftダッシュが解禁！");
     }
-    // 💨 2段ジャンプを実行
-    // 💡 既存の「地面にいるか」を管理している変数（IsGroundedなど）があれば、
-    // 特殊ジャンプの瞬間にそれを一時的に false に書き換える必要があります。
 
+
+    // 2段ジャンプを実行
     private void AirJump()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
-            // 通常移動を 0.3秒間 ストップさせる
+            // 通常移動を一時的にストップ
             specialActionTimer = 0.3f;
 
-            // 速度を一度リセットして、上方向に強烈な速度を直接ぶち込む
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 12f, rb.linearVelocity.z); // 12fは高さに合わせて調整してね
+            // 上方向の速度を完全にリセットしてから、キレのある大ジャンプをぶち込む
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+            rb.AddForce(Vector3.up * 14f, ForceMode.Impulse);
+
+            jumpCount++; // 空中ジャンプを1回消費した
         }
 
-        Deflate();
+        Deflate(); // 元に戻る
     }
 
+    // 横ダッシュを実行
     private void AirDash()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
-            // 通常移動を 0.25秒間 ストップさせる（この間は勢いよく飛ぶ）
             specialActionTimer = 0.25f;
 
             float horizontalInput = Input.GetAxisRaw("Horizontal");
@@ -211,72 +204,24 @@ public class Player : MonoBehaviour
                 ? new Vector3(horizontalInput, 0f, 0f).normalized
                 : transform.forward;
 
-            // 横方向に強烈な速度を直接ぶち込む（Y軸の重さは残すか、0fにして真横に飛ばす）
             rb.linearVelocity = new Vector3(dashDirection.x * airDashSpeed, 2f, dashDirection.z * airDashSpeed);
         }
 
         Deflate();
     }
 
-    // 🧍 元の姿に戻る関数
+    // 元の姿に戻る関数
     private void Deflate()
     {
         isInflated = false;
-        transform.localScale = normalScale; // サイズを元に戻す
+        
+        maxAirJumpCount = 0;
+        transform.localScale = normalScale;
         Debug.Log("空気が抜けて元に戻った。");
     }
 
-    [System.Obsolete]
-    void FixedUpdate()
-    {
-        // ==========================================
-        // 1. 【いつでも受け付ける処理】ボタンの入力チェック
-        // ==========================================
-        // 💡 通常のジャンプボタンが押されたらフラグを立てる（警告が出ていた変数です！）
-        if (Input.GetButtonDown("Jump") && IsGrounded) // 地面にいる時だけ通常ジャンプ
-        {
-            jumpRequested = true;
-        }
+    //[System.Obsolete]
 
-        // 🎈 空気入れで膨らんでいる時の特殊アクション入力
-        if (isInflated)
-        {
-            if (Input.GetButtonDown("Jump")) AirJump();
-            else if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) AirDash();
-        }
-
-
-        // ==========================================
-        // 2. 【タイマーの管理】空気入れダッシュの勢いを残す壁
-        // ==========================================
-        if (specialActionTimer > 0f)
-        {
-            specialActionTimer -= Time.deltaTime;
-            // 💡 ここでリターン(終了)せず、下に進むけど「通常移動の速度上書き」だけをパスさせる構造にします
-        }
-
-
-        // ==========================================
-        // 3. 【実際の移動・ジャンプ処理】
-        // ==========================================
-        Rigidbody rb = GetComponent<Rigidbody>();
-
-        // 🏃 通常の左右移動（タイマーが0の時だけ実行する）
-        if (specialActionTimer <= 0f)
-        {
-            float x = Input.GetAxis("Horizontal");
-            rb.linearVelocity = new Vector3(x * moveSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
-        }
-
-        // 🦘 通常のジャンプの実行（タイマーに関係なく、地面から跳べるようにここに書く！）
-        if (jumpRequested)
-        {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); // 速度リセット
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse); // 上に跳ぶ
-
-            jumpRequested = false; // 💡 使い終わったら必ず false に戻す（これで警告も消えます！）
-        }
-    }
 
     void HandleGrabDrop()
     {
