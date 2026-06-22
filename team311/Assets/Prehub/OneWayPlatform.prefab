@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 1932974892906334775}
   - component: {fileID: 8933594987831531703}
   - component: {fileID: 2938620646730418996}
-  - component: {fileID: 1054359896677473022}
-  - component: {fileID: 747547071702044429}
+  - component: {fileID: 3922021397412063773}
+  - component: {fileID: -9015810793958622014}
   m_Layer: 0
   m_Name: OneWayPlatform
   m_TagString: Untagged
@@ -114,7 +114,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!65 &1054359896677473022
+--- !u!114 &3922021397412063773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3036471872209423322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecc0d5a7be1544a4783694d57a39ab06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OneWayPlatform
+  solidCollider: {fileID: 2938620646730418996}
+--- !u!65 &-9015810793958622014
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -133,18 +146,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.0000001, y: 1.1, z: 0.99999994}
+  m_Size: {x: 1.2, y: 1.2, z: 1.2}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &747547071702044429
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3036471872209423322}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ecc0d5a7be1544a4783694d57a39ab06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::OneWayPlatform
-  solidCollider: {fileID: 2938620646730418996}
