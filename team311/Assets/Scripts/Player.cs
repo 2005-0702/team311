@@ -478,5 +478,10 @@ public class Player : MonoBehaviour
         HasKey = true;
         Debug.Log("鍵をゲットした！");
     }
-
+    // 鍵を使った時に呼び出す関数（これを追加）
+    public void UseKey()
+    {
+        HasKey = false;
+        Debug.Log("鍵を使った！");
+    }
 }

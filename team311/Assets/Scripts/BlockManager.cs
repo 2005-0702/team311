@@ -36,8 +36,10 @@ public class BlockManager : MonoBehaviour
         // 画面内のすべてのSwitchBlockスクリプトを探して実行
         SwitchBlock[] blocks = FindObjectsByType<SwitchBlock>(FindObjectsSortMode.None);
         foreach (SwitchBlock block in blocks)
-        {
             block.RefreshState(isRedActive);
-        }
+
+        SwitchingSpikeTrap[] spikes = FindObjectsByType<SwitchingSpikeTrap>(FindObjectsSortMode.None);
+        foreach (SwitchingSpikeTrap spike in spikes)
+            spike.RefreshState(isRedActive);
     }
 }
