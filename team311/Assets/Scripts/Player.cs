@@ -76,7 +76,7 @@ public class Player : MonoBehaviour
     [Header("空気入れギミックの設定")]
     [SerializeField] private Vector3 normalScale = new Vector3(1, 1, 1); // 通常のサイズ
     [SerializeField] private Vector3 inflatedScale = new Vector3(1.5f, 1.5f, 1.5f); // 膨らんだサイズ
-    [SerializeField] private float airDashSpeed = 15f; // 横ダッシュの速度
+    [SerializeField] private float airDashSpeed = 150.0f; // 横ダッシュの速度
 
     private bool isInflated = false; // 膨らんでいるかどうかのフラグ
 
@@ -197,7 +197,7 @@ public class Player : MonoBehaviour
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
-            specialActionTimer = 0.25f;
+            specialActionTimer = 1.0f;
 
             float horizontalInput = Input.GetAxisRaw("Horizontal");
             Vector3 dashDirection = Mathf.Abs(horizontalInput) > 0.1f
