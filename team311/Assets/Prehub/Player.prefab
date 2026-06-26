@@ -143,6 +143,9 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 0
+  normalScale: {x: 1, y: 1, z: 1}
+  inflatedScale: {x: 1.5, y: 1.5, z: 1.5}
+  airDashSpeed: 15
   squashedScaleY: 0.2
   squashedScaleX: 2
   recoveryDelay: 8

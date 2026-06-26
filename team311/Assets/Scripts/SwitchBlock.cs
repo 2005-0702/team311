@@ -4,41 +4,58 @@ public class SwitchBlock : MonoBehaviour
 {
     public enum BlockColor { Red, Blue }
 
-    [Header("このブロックの色設定")]
-    public BlockColor myColor;
+    [Header("ブロックの色設定")]
+    public BlockColor blockColor;
 
-    private Collider2D myCollider2D; // 2Dゲームの場合
-    private Collider myCollider3D;     // 3Dゲームの場合
-    private MeshRenderer myRenderer;
+    private Renderer blockRenderer;
+    private Collider blockCollider;
+    private Material blockMaterial;
+    private Color originalColor;
 
     void Awake()
     {
-        // コンポーネントを自動取得
-        myCollider2D = GetComponent<Collider2D>();
-        myCollider3D = GetComponent<Collider>();
-        myRenderer = GetComponent<MeshRenderer>();
+        blockRenderer = GetComponent<Renderer>();
+        blockCollider = GetComponent<Collider>();
+
+        // MAYAモデルの半透明マテリアルを取得
+        blockMaterial = blockRenderer.material;
+        originalColor = blockMaterial.color;
     }
-
-    // マネージャーから呼び出されて、表示・非表示（判定ON/OFF）を切り替える
-    public void RefreshState(bool isRedActive)
-    {
-        // 自分自身が表示されるべき条件を計算
-        // (自分が赤でマネージャーも赤、または、自分が青でマネージャーも青)
-        bool shouldBeActive = (myColor == BlockColor.Red && isRedActive) ||
-                              (myColor == BlockColor.Blue && !isRedActive);
-
-        // 見た目の透明度や表示を切り替える
-        if (myRenderer != null)
+           // マネージャーから「今は赤がアクティブだよ(isRedActive)」と教えてもらう関数
+        public void RefreshState(bool isRedActive)
         {
-            // 分かりやすくするために、非アクティブ時は半透明にするか、完全に消す
-            // 今回はシンプルに、非アクティブ時は完全に非表示（または半透明）にします
-            Color color = myRenderer.material.color;
-            color.a = shouldBeActive ? 1.0f : 0.2f; // ONならくっきり、OFFなら薄く
-            myRenderer.material.color = color;
-        }
+            // ==========================================
+            // 修正：あべこべを解消するための判定に書き換え
+            // ==========================================
+            bool shouldBeSolid = false;
 
-        // 当たり判定の切り替え（これがないとすり抜けない）
-        if (myCollider2D != null) myCollider2D.enabled = shouldBeActive;
-        if (myCollider3D != null) myCollider3D.enabled = shouldBeActive;
+            if (blockColor == BlockColor.Red)
+            {
+                // 自分が赤ブロックなら、マネージャーが「赤アクティブ」の時に実体化する！
+                shouldBeSolid = isRedActive;
+            }
+            else if (blockColor == BlockColor.Blue)
+            {
+                // 自分が青ブロックなら、マネージャーが「赤アクティブではない（＝青アクティブ）」の時に実体化する！
+                shouldBeSolid = !isRedActive;
+            }
+
+            // --- 以下はそのまま（半透明と不透明の切り替え） ---
+            if (shouldBeSolid)
+            {
+                Color newColor = originalColor;
+                newColor.a = 1.0f; // 不透明
+                blockMaterial.color = newColor;
+                blockCollider.enabled = true; // ぶつかる
+                Debug.Log(gameObject.name + " を【不透明】にしました"); //原因を突き止めるためのログ
+            }
+            else
+            {
+                Color newColor = originalColor;
+                newColor.a = 0.25f; // 半透明
+                blockMaterial.color = newColor;
+                blockCollider.enabled = false; // すり抜ける
+                Debug.Log(gameObject.name + " を【半透明】にしました"); //原因を突き止めるためのログ
+            }
+        }
     }
-}

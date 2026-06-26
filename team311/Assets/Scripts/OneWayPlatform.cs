@@ -1,46 +1,53 @@
 using UnityEngine;
 
-public class OneWayPlatform : MonoBehaviour
+public class OneWayFloor : MonoBehaviour
 {
-    // 💡 インスペクターから「足場用」のコライダーを直接指定できるようにする
-    [Header("実体化させる足場用のコライダーをドラッグしてね")]
-    [SerializeField] private Collider solidCollider;
-
-    private Transform playerTransform;
+    private Collider floorCollider;
 
     void Start()
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            playerTransform = player.transform;
-        }
+        // 自身のコライダーを取得
+        floorCollider = GetComponent<Collider>();
 
-        // 💡 もしインスペクターでの設定を忘れていた場合の保険
-        if (solidCollider == null)
+        // 最初は「空気（Trigger）」にしておくことで、下から確実に侵入できるようにする！
+        if (floorCollider != null)
         {
-            Debug.LogError($"{gameObject.name} の OneWayPlatform スクリプトに、足場用のコライダーがセットされていません！");
+            floorCollider.isTrigger = true;
         }
     }
 
-    void Update()
+    void OnTriggerStay(Collider other)
     {
-        if (playerTransform == null || solidCollider == null) return;
-
-        // 床（このオブジェクト全体）の上面のY座標
-        float platformTopY = transform.position.y + (transform.localScale.y / 2f);
-        float playerBottomY = playerTransform.position.y;
-
-        // 💡「足場用コライダー」のisTriggerだけをコントロールする
-        if (playerBottomY < platformTopY + 0.2f)
+        if (other.CompareTag("Player"))
         {
-            // プレイヤーが下にいる間は、足場用コライダーもすり抜けにする
-            solidCollider.isTrigger = true;
+            // 床のワールド座標での中心位置を取得
+            Vector3 floorCenter = transform.position;
+            // プレイヤーのワールド座標での中心位置を取得
+            Vector3 playerPos = other.transform.position;
+
+            // 判定をより確実に調整：プレイヤーの足元が床の中心より「上」に抜けたら
+            // (playerPos.y - 0.2f でトカゲくんの足元の位置を大体計算しています)
+            bool isPlayerAbove = (playerPos.y - 0.2f) > floorCenter.y;
+
+            if (isPlayerAbove)
+            {
+                // プレイヤーが上に抜けたら、Triggerを「OFF」にしてガチッとした固い床にする！
+                floorCollider.isTrigger = false;
+            }
+            else
+            {
+                // 下にいる間は、Triggerを「ON」にして空気のままにする
+                floorCollider.isTrigger = true;
+            }
         }
-        else
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
         {
-            // プレイヤーが上に抜けたら、足場用コライダーの実体を有効にする
-            solidCollider.isTrigger = false;
+            // プレイヤーが床から完全に離れたら、再び下から通れるようにトリガー（空気）に戻す
+            floorCollider.isTrigger = true;
         }
     }
 }
