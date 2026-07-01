@@ -87,13 +87,33 @@ public class Box : MonoBehaviour
     {
         if (!isHeld) return;
 
-        // 親子解除して物理復帰
+        // 親子解除
         transform.SetParent(null);
+
+        // ==========================================
+        // プレイヤーの目の前に箱を配置する処理
+        // ==========================================
+        // トカゲくんの正面方向（player.forward）を取得
+        Vector3 forwardDir = player.forward;
+
+        // プレイヤーの中心から、正面に「1.2メートル」離した位置を計算
+        // （※箱のサイズに合わせて 1.0f 〜 1.5f あたりで微調整）
+        Vector3 spawnPosition = player.position + (forwardDir * 1.0f);
+
+        // Y軸（高さ）はトカゲくんと同じか、少しだけ上（お腹の高さなど）に、
+        // ここではプレイヤーの足元より少し上（+0.5f）に調整
+        spawnPosition.y = player.position.y + 2.5f;
+        spawnPosition.x = player.position.x + 0.5f; // プレイヤーの右側に少しずらす
+
+        // 計算した安全な位置に箱を瞬間移動させる
+        transform.position = spawnPosition;
+        // ==========================================
+
+        // 物理復帰
         rb.isKinematic = false;
 
-        // 少し前方に力を与えて自然に落ちるようにする（プレイヤーが動いている場合の慣性）
-        var forward = player.forward;
-        rb.AddForce(forward * dropForwardImpulse, ForceMode.Impulse);
+        // 少し前方へ投げる力を与える（重くした分、ちょっと強めに飛ぶようになる）
+        rb.AddForce(forwardDir * dropForwardImpulse, ForceMode.Impulse);
 
         // 当たり判定の無視を解除
         if (playerColliders != null && myCollider != null)

@@ -32,7 +32,8 @@ Transform:
   m_LocalPosition: {x: -27.16, y: 1.3, z: 0.45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1428596290715720155}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8125607668878911781
@@ -50,7 +51,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8305533024222609787}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -125,4 +126,131 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5f4e3c00c79829498eadab0fc7855d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwitchBlock
-  myColor: 1
+  blockColor: 0
+--- !u!1001 &1466446955846598192
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 9012307876120150301}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.005
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.005
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.005
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 535b447d1598f1347b69760ed3325626, type: 2}
+    - target: {fileID: -7511558181221131132, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 39f5face8e220e14c96d5746fcb915d6, type: 2}
+    - target: {fileID: 919132149155446097, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      propertyPath: m_Name
+      value: a2_color_block_Blue
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1038957784688461472}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1181816558018675388}
+  m_SourcePrefab: {fileID: 100100000, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+--- !u!4 &1428596290715720155 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+  m_PrefabInstance: {fileID: 1466446955846598192}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1772364835648783201 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b240485c0cd42cf4b9fece97601b8353, type: 3}
+  m_PrefabInstance: {fileID: 1466446955846598192}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1038957784688461472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1772364835648783201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5f4e3c00c79829498eadab0fc7855d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SwitchBlock
+  blockColor: 1
+--- !u!65 &1181816558018675388
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1772364835648783201}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 200.00005, y: 200, z: 200.00005}
+  m_Center: {x: -0.4568559, y: 0, z: 0}
