@@ -1,10 +1,12 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CountdownTimer : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI countdownText; // TextMeshPro をアサイン
     [SerializeField] private float startTime = 300f;        // 300秒 = 5分
+    [SerializeField] private string nextSceneName = "GameOverScene";          // 切り替え先
 
     private float currentTime;
     private bool isRunning = true;
@@ -28,8 +30,8 @@ public class CountdownTimer : MonoBehaviour
             currentTime = 0f;
             isRunning = false;
 
-            // 0になった瞬間に何かしたい場合はここに処理を書く
-            // OnTimeUp();
+            // ゲームオーバシーンへ移動
+            SceneManager.LoadScene(nextSceneName);
         }
 
         UpdateText(currentTime);
