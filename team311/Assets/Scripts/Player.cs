@@ -13,6 +13,8 @@ public class Player : MonoBehaviour
     public float pickupRange = 1.5f;
     Box heldBox;
 
+    [SerializeField] private KeyCode grabKey = KeyCode.E;
+
     [Header("Split Settings")]
     [Tooltip("切断された後に生成する上半身のプレハブ")]
     public GameObject upperBodyPrefab;
@@ -71,8 +73,6 @@ public class Player : MonoBehaviour
     // しゃがみ状態を外部から参照できるように公開
     public bool IsCrouching => isCrouching;
 
-    //Player.cs の中に追加・統合するコード
-
     [Header("空気入れギミックの設定")]
     [SerializeField] private Vector3 normalScale = new Vector3(1, 1, 1); // 通常のサイズ
     [SerializeField] private Vector3 inflatedScale = new Vector3(1.5f, 1.5f, 1.5f); // 膨らんだサイズ
@@ -85,7 +85,7 @@ public class Player : MonoBehaviour
         // 接地判定を毎フレーム実行
         CheckGrounded();
 
-        // 修正：地面に着いていたら、空中ジャンプの消費数を「0」にリセットする
+        // 地面に着いていたら、空中ジャンプの消費数を「0」にリセットする
         if (isGrounded)
         {
             jumpCount = 0;
@@ -103,23 +103,29 @@ public class Player : MonoBehaviour
         {
             Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
             rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
+
+            // プレイヤーの向き（FacingDir）を移動方向に応じて更新
+            if (h > 0.1f) FacingDir = 1;
+            else if (h < -0.1f) FacingDir = -1;
         }
 
-        // （※しゃがみ処理やビジュアル反映、箱の掴み処理はそのまま残してください）
+        // 箱の「つかむ・離す」のキー入力チェック
+        if (Input.GetKeyDown(grabKey))
+        {
+            HandleGrabDrop();
+        }
 
-        // ==========================================
-        // 修正：ジャンプの入力判定（通常ジャンプと2段ジャンプを完全分離）
-        // ==========================================
+        // ジャンプの入力判定（通常ジャンプと2段ジャンプを完全分離）
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (isGrounded)
             {
-                // ① 地面にいるなら、いつでも通常ジャンプを最優先で許可
+                // 地面にいるなら、いつでも通常ジャンプを最優先で許可
                 jumpRequested = true;
             }
             else if (jumpCount < maxAirJumpCount && specialActionTimer <= 0f)
             {
-                // ② 空中にいて、かつ空中ジャンプ可能回数が残っているなら「2段ジャンプ」を実行
+                // 空中にいて、かつ空中ジャンプ可能回数が残っているなら「2段ジャンプ」を実行
                 AirJump();
             }
         }
@@ -137,9 +143,7 @@ public class Player : MonoBehaviour
             }
         }
 
-        // ==========================================
         // 空気入れ状態の時の「横ダッシュ（Shift）」
-        // ==========================================
         if (isInflated)
         {
             // 空中でShiftを押したら横ダッシュを発動
@@ -149,9 +153,10 @@ public class Player : MonoBehaviour
             }
         }
     }
+
     void FixedUpdate()
     {
-        // 通常ジャンプの物理実行（地面から跳び上がる瞬間のみここを通る）
+        // 通常ジャンプの物理実行
         if (jumpRequested)
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
@@ -160,6 +165,7 @@ public class Player : MonoBehaviour
             jumpRequested = false;
         }
     }
+
     // 空気入れから呼び出される、膨らむ関数
     public void Inflate()
     {
@@ -171,24 +177,18 @@ public class Player : MonoBehaviour
         Debug.Log("プレイヤーが膨らんだ！空中2段ジャンプ or Shiftダッシュが解禁！");
     }
 
-
     // 2段ジャンプを実行
     private void AirJump()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
-            // 通常移動を一時的にストップ
             specialActionTimer = 0.3f;
-
-            // 上方向の速度を完全にリセットしてから、キレのある大ジャンプをぶち込む
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * 14f, ForceMode.Impulse);
-
-            jumpCount++; // 空中ジャンプを1回消費した
+            jumpCount++;
         }
-
-        Deflate(); // 元に戻る
+        Deflate();
     }
 
     // 横ダッシュを実行
@@ -198,7 +198,6 @@ public class Player : MonoBehaviour
         if (rb != null)
         {
             specialActionTimer = 1.0f;
-
             float horizontalInput = Input.GetAxisRaw("Horizontal");
             Vector3 dashDirection = Mathf.Abs(horizontalInput) > 0.1f
                 ? new Vector3(horizontalInput, 0f, 0f).normalized
@@ -206,7 +205,6 @@ public class Player : MonoBehaviour
 
             rb.linearVelocity = new Vector3(dashDirection.x * airDashSpeed, 2f, dashDirection.z * airDashSpeed);
         }
-
         Deflate();
     }
 
@@ -214,15 +212,12 @@ public class Player : MonoBehaviour
     private void Deflate()
     {
         isInflated = false;
-        
         maxAirJumpCount = 0;
         transform.localScale = normalScale;
         Debug.Log("空気が抜けて元に戻った。");
     }
 
-    //[System.Obsolete]
-
-
+    // 腕の処理を全カットしてスッキリさせた掴み処理！
     void HandleGrabDrop()
     {
         if (heldBox != null)
@@ -232,40 +227,19 @@ public class Player : MonoBehaviour
         }
         else
         {
-            // --- 掴み判定の位置を決定 ---
-            Vector3 checkPos;
-            ExtendableArm arm = GetComponentInChildren<ExtendableArm>();
-
-            // 腕が伸びている（手の位置が肩から離れている）場合は、手の位置で判定
-            if (arm != null && arm.handVisual != null && Vector3.Distance(arm.transform.position, arm.handVisual.position) > 0.5f)
-            {
-                checkPos = arm.handVisual.position;
-            }
-            else
-            {
-                // 腕が縮んでいる時は、通常通りプレイヤーの正面で判定
-                checkPos = transform.position + transform.forward * 0.5f;
-            }
+            // プレイヤーの正面（少し前）を中心にして、球体の範囲で箱を探す
+            Vector3 checkPos = transform.position + transform.forward * 0.5f;
 
             Collider[] colliders = Physics.OverlapSphere(checkPos, pickupRange);
             foreach (var col in colliders)
             {
                 Box box = col.GetComponent<Box>();
                 if (box == null) box = col.GetComponentInParent<Box>();
+
                 if (box != null)
                 {
-                    // 腕が伸びている場合は「手の先（arm.handVisual）」に付けるように指定
-                    bool isUsingArm = arm != null && arm.handVisual != null && Vector3.Distance(arm.transform.position, arm.handVisual.position) > 0.5f;
-
-                    if (isUsingArm)
-                    {
-                        box.TryPickup(transform, holdPoint, arm.handVisual);
-                    }
-                    else
-                    {
-                        box.TryPickup(transform, holdPoint);
-                    }
-
+                    // 通常のキャッチ：手元（holdPoint）に直接くっつける
+                    box.TryPickup(transform, holdPoint);
                     heldBox = box;
                     break;
                 }
@@ -273,33 +247,25 @@ public class Player : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// プレイヤーを上半身と下半身に切り離す処理。
-    /// Slicerから呼び出されます。
-    /// </summary>
     public void Split()
     {
         if (isSplit) return;
         isSplit = true;
 
-        // 持っている箱があれば強制的に離す
         if (heldBox != null)
         {
             heldBox.Drop(transform);
             heldBox = null;
         }
 
-        // カメラを事前に取得しておく
         Camera cam = GetComponentInChildren<Camera>();
 
-        // 上半身と下半身を生成
         if (upperBodyPrefab != null)
         {
             GameObject upper = Instantiate(upperBodyPrefab, transform.position + Vector3.up * 0.5f, transform.rotation);
             Rigidbody upperRb = upper.GetComponent<Rigidbody>();
             if (upperRb) upperRb.AddForce(Vector3.up * 2f, ForceMode.Impulse);
 
-            // 上半身をカメラで追いかけるようにする
             if (cam != null)
             {
                 cam.transform.SetParent(upper.transform);
@@ -313,29 +279,23 @@ public class Player : MonoBehaviour
             GameObject lower = Instantiate(lowerBodyPrefab, transform.position, transform.rotation);
         }
 
-        // カメラがまだ親子関係にある場合は切り離しておく（念のため）
         if (cam != null && cam.transform.parent == transform)
         {
             cam.transform.SetParent(null);
         }
 
-        // 元のプレイヤーを消す
         Destroy(gameObject);
     }
 
     void CheckGrounded()
     {
-        // 足元の位置を計算（少しだけ内側に浮かせて判定の安定性を高める）
         Vector3 footPos = transform.TransformPoint(new Vector3(0, colliderBottomY + 0.1f, 0));
-
-        // 足元に小さな球を作って判定
         Collider[] cols = Physics.OverlapSphere(footPos, groundCheckRadius, groundLayer == 0 ? ~0 : groundLayer);
 
         bool lastGrounded = isGrounded;
         isGrounded = false;
         foreach (var c in cols)
         {
-            // 自分自身やトリガー、または「のびーる腕」のパーツは除外
             if (c.gameObject != gameObject && !c.isTrigger && !c.name.Contains("Visual") && !c.name.Contains("Hand"))
             {
                 isGrounded = true;
@@ -343,39 +303,40 @@ public class Player : MonoBehaviour
             }
         }
 
-        // 接地状態が変化したときのみログを出す（ログの洪水を防ぐ）
         if (isGrounded != lastGrounded)
         {
             Debug.Log($"CheckGrounded: isGrounded changed -> {isGrounded} (overlapCount={cols.Length})");
         }
 
-        // エディタで確認しやすいようにワイヤー表示（OnDrawGizmosSelectedでも確認可）
         Debug.DrawLine(footPos, footPos + Vector3.up * 0.1f, isGrounded ? Color.green : Color.red, 0.1f);
         Debug.DrawRay(transform.position, Vector3.up * (originalColliderHeight * 0.8f), Color.yellow, 0.1f);
     }
 
     private void OnDrawGizmosSelected()
     {
-        // エディタ上で接地判定の範囲を可視化（デバッグ用）
         Gizmos.color = Color.red;
         Vector3 footPos = transform.TransformPoint(new Vector3(0, colliderBottomY, 0));
         Gizmos.DrawWireSphere(footPos, groundCheckRadius);
+
+        // 掴み判定の範囲を黄色いワイヤーで可視化
+        Gizmos.color = Color.yellow;
+        Vector3 checkPos = transform.position + transform.forward * 0.5f;
+        Gizmos.DrawWireSphere(checkPos, pickupRange);
     }
 
-    // プロパティとして isGrounded を公開
     public bool IsGrounded
     {
         get { return isGrounded; }
     }
 
-    // プレイヤーが押しつぶされた時に呼ばれるメソッドを追加
     [Header("Squash Settings")]
-    public float squashedScaleY = 0.2f;   // 縦の潰れ具合
-    public float squashedScaleX = 2.0f;   // 横の広がり
-    public float recoveryDelay = 8f;    // 復活までの秒数
+    public float squashedScaleY = 0.2f;
+    public float squashedScaleX = 2.0f;
+    public float recoveryDelay = 8f;
 
     bool isSquashed = false;
     Vector3 originalScale;
+
     public void Squash()
     {
         if (isSquashed) return;
@@ -383,47 +344,33 @@ public class Player : MonoBehaviour
 
         isGrounded = true;
 
-        // ここに「ぺしゃんこ」になった時の処理を記述
-        // 例: ゲームオーバー処理やアニメーション再生など
         Debug.Log("Player was squashed!");
-        // 必要に応じて追加の処理を実装してください
         originalScale = transform.localScale;
         transform.localScale = new Vector3(
             originalScale.x * 2.0f,
             originalScale.y * 0.2f,
             originalScale.z
         );
-        // 一定時間後に元に戻すコルーチン開始
         StartCoroutine(RecoverFromSquash());
     }
 
     IEnumerator RecoverFromSquash()
     {
-        // 待機
         yield return new WaitForSeconds(recoveryDelay);
-
-        // スケールを元に戻す
         transform.localScale = originalScale;
-
-        // 状態フラグ解除
         isSquashed = false;
-
         isGrounded = true;
-
         Debug.Log("Player recovered from squash!");
     }
 
-
-    // 鍵を持っているかどうかのフラグ
     public bool HasKey { get; private set; } = false;
 
-    // 鍵を拾った時に呼び出す関数
     public void PickUpKey()
     {
         HasKey = true;
         Debug.Log("鍵をゲットした！");
     }
-    // 鍵を使った時に呼び出す関数（これを追加）
+
     public void UseKey()
     {
         HasKey = false;

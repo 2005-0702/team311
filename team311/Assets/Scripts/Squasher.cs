@@ -29,7 +29,7 @@ public class Squasher : MonoBehaviour
             MovingHazard movingHazard = GetComponent<MovingHazard>();
             bool isMovingPosDown = movingHazard != null && movingHazard.IsMovingDown();
 
-            // 💡 速度チェックが必要ない（0設定）か、下移動中であること
+            // 速度チェックが必要ない（0設定）か、下移動中であること
             bool isCrushingSpeed = (crushThreshold <= 0) || isFalling || isMovingPosDown;
 
             if (isCrushingSpeed)
