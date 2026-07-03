@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class Key : MonoBehaviour
 {
+    // この鍵を取得すると消えるブロック
+    [SerializeField] private GameObject lockedBlock;
     private void OnTriggerEnter(Collider other)
     {
         // 触れたのがプレイヤーかどうか確認
@@ -12,6 +14,12 @@ public class Key : MonoBehaviour
         {
             // プレイヤーに鍵を渡す
             player.PickUpKey();
+
+            // 鍵付きブロックを消す
+            if (lockedBlock != null)
+            {
+                Destroy(lockedBlock);
+            }
 
             // ?? ここで「チャキーン！」といったSE（効果音）を鳴らすと気持ちいいです
 
