@@ -329,7 +329,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c64d05a3b650c5499ec4d1bbc21ffaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GoalManager
-  titleSceneName: TitleScene
+  titleSceneName: StageSelect
 --- !u!4 &1045016196
 Transform:
   m_ObjectHideFlags: 0

@@ -46,12 +46,24 @@ public class Player : MonoBehaviour
     private int jumpCount = 0;       // 今、空中ジャンプを何回消費したか
     private int maxAirJumpCount = 0; // 空中で追加でジャンプできる回数（通常は0回、空気入れで1回に）
 
+    // --- カメラ固定用フィールド ---
+    private Camera cachedCamera;
+    private Vector3 cameraWorldOffset;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
 
-        // 当たり判定の初期値を記録
+        // カメラのワールドオフセットをキャッシュ（プレイヤーのスケールに影響されない位置保持のため）
+        cachedCamera = GetComponentInChildren<Camera>();
+        if (cachedCamera == null) cachedCamera = Camera.main;
+        if (cachedCamera != null)
+        {
+            cameraWorldOffset = cachedCamera.transform.position - transform.position;
+        }
+
+        // 当たり判定の初値を記録
         if (col is BoxCollider box)
         {
             originalColliderHeight = box.size.y;
@@ -65,6 +77,21 @@ public class Player : MonoBehaviour
 
         // 底面の位置を計算（ここを固定する）
         colliderBottomY = originalColliderCenter.y - (originalColliderHeight / 2f);
+    }
+
+    void LateUpdate()
+    {
+        // 毎フレーム、カメラのワールド位置をプレイヤー位置 + キャッシュしたオフセットに保つ
+        // これによりプレイヤーの localScale 変更（Squash）でカメラの世界座標がずれるのを防ぐ
+        if (cachedCamera == null)
+        {
+            cachedCamera = GetComponentInChildren<Camera>();
+            if (cachedCamera == null) cachedCamera = Camera.main;
+            if (cachedCamera == null) return;
+            cameraWorldOffset = cachedCamera.transform.position - transform.position;
+        }
+
+        cachedCamera.transform.position = transform.position + cameraWorldOffset;
     }
 
     // プレイヤーの向き（1: 右, -1: 左）
