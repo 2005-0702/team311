@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5f4e3c00c79829498eadab0fc7855d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwitchBlock
-  blockColor: 0
+  blockColor: 1
 --- !u!1001 &1466446955846598192
 PrefabInstance:
   m_ObjectHideFlags: 0

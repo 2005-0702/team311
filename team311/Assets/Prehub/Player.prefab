@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 1472022514170298154}
   - component: {fileID: 5931545896022938384}
   - component: {fileID: 2680517120649426225}
+  - component: {fileID: 1985624959028545297}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -137,6 +138,7 @@ MonoBehaviour:
   lowJumpMultiplier: 2
   holdPoint: {fileID: 0}
   pickupRange: 1.5
+  grabKey: 101
   upperBodyPrefab: {fileID: 5576607228205285948, guid: 2998f541195593649890c22252ef8d8a, type: 3}
   lowerBodyPrefab: {fileID: 5814215335287250154, guid: 7c4be252b9cf90f4ca8246569035f5c4, type: 3}
   groundCheckRadius: 0.3
@@ -201,6 +203,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   maxHealth: 1
+--- !u!114 &1985624959028545297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6963390269311406751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3d2bba501c4ee14bbb865c61f58451f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlockManager
+  isRedActive: 1
 --- !u!1001 &7776363788506268440
 PrefabInstance:
   m_ObjectHideFlags: 0
