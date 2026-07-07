@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 5931545896022938384}
   - component: {fileID: 2680517120649426225}
   - component: {fileID: 1985624959028545297}
+  - component: {fileID: 1349906374775207881}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -216,6 +217,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BlockManager
   isRedActive: 1
+--- !u!114 &1349906374775207881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6963390269311406751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 989470bb554c492458b77448b4b54871, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EventSystemCleaner
 --- !u!1001 &7776363788506268440
 PrefabInstance:
   m_ObjectHideFlags: 0
