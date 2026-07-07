@@ -32,6 +32,12 @@ public class Player : MonoBehaviour
     public float groundCheckRadius = 0.3f;
     public LayerMask groundLayer; // 地面とみなすレイヤー
 
+    [Header("One Way Floor Settings")]
+    [Tooltip("すり抜ける床に設定したレイヤーを選択してください")]
+    public LayerMask oneWayFloorLayer;
+    [Tooltip("足元からどれくらい下までRayを飛ばすか")]
+    public float rayDistance = 0.3f;
+
     // しゃがみ時の設定
     float originalColliderHeight;
     Vector3 originalColliderCenter;
@@ -82,7 +88,6 @@ public class Player : MonoBehaviour
     void LateUpdate()
     {
         // 毎フレーム、カメラのワールド位置をプレイヤー位置 + キャッシュしたオフセットに保つ
-        // これによりプレイヤーの localScale 変更（Squash）でカメラの世界座標がずれるのを防ぐ
         if (cachedCamera == null)
         {
             cachedCamera = GetComponentInChildren<Camera>();
@@ -112,6 +117,9 @@ public class Player : MonoBehaviour
         // 接地判定を毎フレーム実行
         CheckGrounded();
 
+        // 追加：一方通行の床（すり抜け床）をRayで制御する処理
+        HandleOneWayFloor();
+
         // 地面に着いていたら、空中ジャンプの消費数を「0」にリセットする
         if (isGrounded)
         {
@@ -131,7 +139,6 @@ public class Player : MonoBehaviour
             Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
             rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
 
-            // プレイヤーの向き（FacingDir）を移動方向に応じて更新
             if (h > 0.1f) FacingDir = 1;
             else if (h < -0.1f) FacingDir = -1;
         }
@@ -142,17 +149,15 @@ public class Player : MonoBehaviour
             HandleGrabDrop();
         }
 
-        // ジャンプの入力判定（通常ジャンプと2段ジャンプを完全分離）
+        // ジャンプの入力判定
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (isGrounded)
             {
-                // 地面にいるなら、いつでも通常ジャンプを最優先で許可
                 jumpRequested = true;
             }
             else if (jumpCount < maxAirJumpCount && specialActionTimer <= 0f)
             {
-                // 空中にいて、かつ空中ジャンプ可能回数が残っているなら「2段ジャンプ」を実行
                 AirJump();
             }
         }
@@ -173,7 +178,6 @@ public class Player : MonoBehaviour
         // 空気入れ状態の時の「横ダッシュ（Shift）」
         if (isInflated)
         {
-            // 空中でShiftを押したら横ダッシュを発動
             if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
             {
                 AirDash();
@@ -193,18 +197,48 @@ public class Player : MonoBehaviour
         }
     }
 
+    // 足元からのRayで一方通行の床を制御する関数
+    void HandleOneWayFloor()
+    {
+        // プレイヤーのコライダーの一番底面（足元）の位置を計算
+        Vector3 footPos = transform.TransformPoint(new Vector3(0, colliderBottomY, 0));
+
+        // 足元から真下に向けてRay（光線）を飛ばす
+        RaycastHit hit;
+        bool rayHitFloor = Physics.Raycast(footPos, Vector3.down, out hit, rayDistance, oneWayFloorLayer);
+
+        // デバッグ用にエディタ上でRayを可視化（当たったら緑、外れたら赤）
+        Debug.DrawRay(footPos, Vector3.down * rayDistance, rayHitFloor ? Color.green : Color.red);
+
+        if (rayHitFloor)
+        {
+            Collider floorCollider = hit.collider;
+
+            // プレイヤーが「下に落ちてきている（着地体制）」かつ「足元が床の上面より高い位置にある」ときだけ乗れる
+            if (rb.linearVelocity.y <= 0.1f && footPos.y >= hit.point.y - 0.05f)
+            {
+                // 当たり判定をONにする（衝突無視を解除）
+                Physics.IgnoreCollision(col, floorCollider, false);
+            }
+            else
+            {
+                // それ以外（ジャンプで上昇中など）はすり抜ける
+                Physics.IgnoreCollision(col, floorCollider, true);
+            }
+        }
+    }
+
     // 空気入れから呼び出される、膨らむ関数
     public void Inflate()
     {
         if (isInflated) return;
 
         isInflated = true;
-        maxAirJumpCount = 1; // 空中ジャンプを「1回」許可する
+        maxAirJumpCount = 1;
         transform.localScale = inflatedScale;
         Debug.Log("プレイヤーが膨らんだ！空中2段ジャンプ or Shiftダッシュが解禁！");
     }
 
-    // 2段ジャンプを実行
     private void AirJump()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
@@ -218,7 +252,6 @@ public class Player : MonoBehaviour
         Deflate();
     }
 
-    // 横ダッシュを実行
     private void AirDash()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
@@ -235,7 +268,6 @@ public class Player : MonoBehaviour
         Deflate();
     }
 
-    // 元の姿に戻る関数
     private void Deflate()
     {
         isInflated = false;
@@ -244,7 +276,6 @@ public class Player : MonoBehaviour
         Debug.Log("空気が抜けて元に戻った。");
     }
 
-    // 腕の処理を全カットしてスッキリさせた掴み処理！
     void HandleGrabDrop()
     {
         if (heldBox != null)
@@ -254,7 +285,6 @@ public class Player : MonoBehaviour
         }
         else
         {
-            // プレイヤーの正面（少し前）を中心にして、球体の範囲で箱を探す
             Vector3 checkPos = transform.position + transform.forward * 0.5f;
 
             Collider[] colliders = Physics.OverlapSphere(checkPos, pickupRange);
@@ -265,7 +295,6 @@ public class Player : MonoBehaviour
 
                 if (box != null)
                 {
-                    // 通常のキャッチ：手元（holdPoint）に直接くっつける
                     box.TryPickup(transform, holdPoint);
                     heldBox = box;
                     break;
@@ -345,7 +374,6 @@ public class Player : MonoBehaviour
         Vector3 footPos = transform.TransformPoint(new Vector3(0, colliderBottomY, 0));
         Gizmos.DrawWireSphere(footPos, groundCheckRadius);
 
-        // 掴み判定の範囲を黄色いワイヤーで可視化
         Gizmos.color = Color.yellow;
         Vector3 checkPos = transform.position + transform.forward * 0.5f;
         Gizmos.DrawWireSphere(checkPos, pickupRange);
@@ -356,6 +384,7 @@ public class Player : MonoBehaviour
         get { return isGrounded; }
     }
 
+    // --- 省略されていた残りのメンバ変数や関数群 ---
     [Header("Squash Settings")]
     public float squashedScaleY = 0.2f;
     public float squashedScaleX = 2.0f;
