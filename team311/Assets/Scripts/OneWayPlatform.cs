@@ -1,53 +1,60 @@
 using UnityEngine;
 
-public class OneWayFloor : MonoBehaviour
+/// <summary>
+/// 【最終安定版】一方通行の足場スクリプト。
+/// 金網オブジェクト（RigidbodyのIs Kinematicオン）にアタッチしてください。
+/// </summary>
+public class OneWayPlatform : MonoBehaviour
 {
-    private Collider floorCollider;
+    private Collider blockCollider;
 
     void Start()
     {
-        // 自身のコライダーを取得
-        floorCollider = GetComponent<Collider>();
+        // 自身のコライダー（1個に整理した正しいコライダー）を取得
+        blockCollider = GetComponent<Collider>();
+    }
 
-        // 最初は「空気（Trigger）」にしておくことで、下から確実に侵入できるようにする！
-        if (floorCollider != null)
+    // プレイヤーが下から接触している間、常にチェック
+    private void OnCollisionEnter(Collision collision)
+    {
+        CheckOneWay(collision);
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        CheckOneWay(collision);
+    }
+
+    private void CheckOneWay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
         {
-            floorCollider.isTrigger = true;
+            Rigidbody playerRb = collision.gameObject.GetComponent<Rigidbody>();
+
+            if (playerRb != null)
+            {
+                // プレイヤーが上に向かって移動している（ジャンプ中）なら
+                if (playerRb.linearVelocity.y > 0.1f)
+                {
+                    // 衝突を無視してすり抜けさせる
+                    if (blockCollider != null)
+                    {
+                        Physics.IgnoreCollision(collision.collider, blockCollider, true);
+                    }
+                }
+            }
         }
     }
 
-    void OnTriggerStay(Collider other)
+    // プレイヤーが金網から完全に抜け切ったら、上から乗れるように衝突無視を解除
+    private void OnCollisionExit(Collision collision)
     {
-        if (other.CompareTag("Player"))
+        if (collision.gameObject.CompareTag("Player"))
         {
-            // 床のワールド座標での中心位置を取得
-            Vector3 floorCenter = transform.position;
-            // プレイヤーのワールド座標での中心位置を取得
-            Vector3 playerPos = other.transform.position;
-
-            // 判定をより確実に調整：プレイヤーの足元が床の中心より「上」に抜けたら
-            // (playerPos.y - 0.2f でトカゲくんの足元の位置を大体計算しています)
-            bool isPlayerAbove = (playerPos.y - 0.2f) > floorCenter.y;
-
-            if (isPlayerAbove)
+            if (blockCollider != null)
             {
-                // プレイヤーが上に抜けたら、Triggerを「OFF」にしてガチッとした固い床にする！
-                floorCollider.isTrigger = false;
+                Physics.IgnoreCollision(collision.collider, blockCollider, false);
             }
-            else
-            {
-                // 下にいる間は、Triggerを「ON」にして空気のままにする
-                floorCollider.isTrigger = true;
-            }
-        }
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            // プレイヤーが床から完全に離れたら、再び下から通れるようにトリガー（空気）に戻す
-            floorCollider.isTrigger = true;
         }
     }
 }

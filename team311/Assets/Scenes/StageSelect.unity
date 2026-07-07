@@ -1463,7 +1463,6 @@ GameObject:
   - component: {fileID: 1777685610}
   - component: {fileID: 1777685609}
   - component: {fileID: 1777685613}
-  - component: {fileID: 1777685614}
   m_Layer: 0
   m_Name: Stage1
   m_TagString: Untagged
@@ -1583,20 +1582,6 @@ MonoBehaviour:
   down: {fileID: 0}
   left: {fileID: 0}
   right: {fileID: 1253262168}
---- !u!114 &1777685614
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1777685608}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StageSelectManager
-  startStage: {fileID: 0}
-  moveSpeed: 5
 --- !u!1 &2031759368
 GameObject:
   m_ObjectHideFlags: 0
