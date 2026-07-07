@@ -1166,6 +1166,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Main Camera
       objectReference: {fileID: 0}
+    - target: {fileID: 1486591738491862858, guid: 401b1a278c79ab74ab16cf78bd06b327, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2208788718970995992, guid: 401b1a278c79ab74ab16cf78bd06b327, type: 3}
       propertyPath: m_LocalPosition.x
       value: 10.48
@@ -1614,7 +1618,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 740269abd9885ab448e04542d0b065b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StagePoint
-  sceneName: MorikawaScene
+  sceneName: s
   up: {fileID: 0}
   down: {fileID: 0}
   left: {fileID: 1253262168}

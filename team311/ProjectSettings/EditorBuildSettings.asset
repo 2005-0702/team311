@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/Scenes/MorikawaScene.unity
     guid: 1d7ce70858310b4429dcedee8d04a82e
   - enabled: 1
+    path: Assets/Scenes/s.unity
+    guid: 7f2a7ef2fc0f9844b940051010414596
+  - enabled: 1
     path: Assets/Scenes/GameOverScene.unity
     guid: 5662064988a2a5f4a906d468225470c5
   - enabled: 1
