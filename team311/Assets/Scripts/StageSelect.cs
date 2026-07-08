@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class StageSelectManager : MonoBehaviour
+public class StageSelect : MonoBehaviour
 {
     [Header("開始ステージ")]
     public StagePoint startStage;
