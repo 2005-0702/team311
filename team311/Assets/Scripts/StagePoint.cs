@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class StagePoint : MonoBehaviour
 {
-    [Header("SampleScene")]
+    [Header("Scene")]
     public string sceneName;
 
 

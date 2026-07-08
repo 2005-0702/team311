@@ -48,6 +48,14 @@ public class Reconnector : MonoBehaviour
                 cam.transform.localRotation = Quaternion.Euler(15, 0, 0);
             }
         }
+        else
+        {
+            // プレイヤープレハブがない場合、カメラが上半身と共に破棄されないように親を解除する
+            if (cam != null)
+            {
+                cam.transform.SetParent(null);
+            }
+        }
 
         // 4. 上半身を消去
         Destroy(upper.gameObject);
