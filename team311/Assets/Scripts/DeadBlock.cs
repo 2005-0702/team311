@@ -1,20 +1,18 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-
-public class SpikeTrap : MonoBehaviour
+public class DeadBlock : MonoBehaviour
 {
-    // ゲームオーバシーン名
+    // ゲームオーバーシーン名
     public string gameOverSceneName = "GameOverScene";
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision collision)
     {
-        // Playerタグが付いているか確認
-        if (other.CompareTag("Player"))
+        // ぶつかった相手がプレイヤーか確認
+        if (collision.gameObject.CompareTag("Player"))
         {
             // ゲームオーバーシーンへ切り替える
             SceneManager.LoadScene(gameOverSceneName);
         }
     }
-
 }
