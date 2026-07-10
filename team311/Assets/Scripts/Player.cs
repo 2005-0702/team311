@@ -55,7 +55,21 @@ public class Player : MonoBehaviour
     // --- カメラ固定用フィールド ---
     private Camera cachedCamera;
     private Vector3 cameraWorldOffset;
+    private void Awake()
+    {
+        Debug.Log(
+            $"Player Awake: {name}, Scene: {gameObject.scene.name}",
+            this
+        );
+    }
 
+    private void OnDestroy()
+    {
+        Debug.LogWarning(
+            $"Player Destroy: {name}, Scene: {gameObject.scene.name}",
+            this
+        );
+    }
     void Start()
     {
         rb = GetComponent<Rigidbody>();
