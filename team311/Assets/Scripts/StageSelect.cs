@@ -12,6 +12,7 @@ public class StageSelect : MonoBehaviour
     private StagePoint currentStage;
     private StagePoint targetStage;
     private bool isMoving;
+    bool IsLoading = false;
 
     void Start()
     {
@@ -44,10 +45,11 @@ public class StageSelect : MonoBehaviour
         // ステージ決定
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            if (!string.IsNullOrEmpty(currentStage.sceneName))
+            if (!string.IsNullOrEmpty(currentStage.sceneName)&& !IsLoading)
             {
+                IsLoading = true;
                 Debug.Log("Scene読み込み : " + currentStage.sceneName);
-                SceneManager.LoadScene(currentStage.sceneName);
+                SceneManager.LoadSceneAsync(currentStage.sceneName, LoadSceneMode.Single);
             }
             else
             {
