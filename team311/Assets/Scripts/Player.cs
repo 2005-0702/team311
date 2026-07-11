@@ -28,6 +28,8 @@ public class Player : MonoBehaviour
     bool isGrounded;
     bool isCrouching;
 
+   
+
     [Header("Ground Check")]
     public float groundCheckRadius = 0.3f;
     public LayerMask groundLayer; // 地面とみなすレイヤー
@@ -55,6 +57,10 @@ public class Player : MonoBehaviour
     // --- カメラ固定用フィールド ---
     private Camera cachedCamera;
     private Vector3 cameraWorldOffset;
+
+    // アニメーターを制御するための変数
+    private Animator anim;
+
     private void Awake()
     {
         Debug.Log(
@@ -74,6 +80,9 @@ public class Player : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+
+        // モデルについているAnimatorを自動で取得する
+        anim = GetComponentInChildren<Animator>();
 
         // カメラのワールドオフセットをキャッシュ（プレイヤーのスケールに影響されない位置保持のため）
         cachedCamera = GetComponentInChildren<Camera>();
@@ -155,7 +164,19 @@ public class Player : MonoBehaviour
 
             if (h > 0.1f) FacingDir = 1;
             else if (h < -0.1f) FacingDir = -1;
-        }
+
+            // キー入力（h）が左右どちらかにあれば歩きアニメーションをON、なければOFF
+            if (anim != null)
+            {
+                // Mathf.Abs(h) > 0.1f は「左右どちらかにスティックやキーが倒されているか」という意味です
+                anim.SetBool("isWalking", Mathf.Abs(h) > 0.1f);
+            }
+            else
+            {
+            // 特殊アクション中などで操作できない時は歩きをOFFにする
+            if (anim != null) anim.SetBool("isWalking", false);
+            }
+    }
 
         // 箱の「つかむ・離す」のキー入力チェック
         if (Input.GetKeyDown(grabKey))
