@@ -38,36 +38,9 @@ public class UpperBodyController : MonoBehaviour
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
 
-        // --- 箱の操作 ---
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            HandleGrabDrop();
-        }
+       
     }
-    void HandleGrabDrop()
-    {
-        if (heldBox != null)
-        {
-            heldBox.Drop(transform);
-            heldBox = null;
-        }
-        else
-        {
-            Vector3 checkPos = transform.position + transform.forward * 0.5f;
-            Collider[] colliders = Physics.OverlapSphere(checkPos, pickupRange);
-            foreach (var col in colliders)
-            {
-                Box box = col.GetComponent<Box>();
-                if (box == null) box = col.GetComponentInParent<Box>();
-                if (box != null)
-                {
-                    box.TryPickup(transform, holdPoint);
-                    heldBox = box;
-                    break;
-                }
-            }
-        }
-    }
+    
 
     private void OnCollisionEnter(Collision collision)
     {

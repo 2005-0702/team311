@@ -58,6 +58,10 @@ public class Player : MonoBehaviour
     private Camera cachedCamera;
     private Vector3 cameraWorldOffset;
 
+    [Header("Animation & Visual Settings")]
+    [Tooltip("MAYAのモデル（見た目）のオブジェクトをここにドラッグ＆ドロップしてください")]
+    public Transform visualTransform;
+
     // アニメーターを制御するための変数
     private Animator anim;
 
@@ -165,6 +169,20 @@ public class Player : MonoBehaviour
             if (h > 0.1f) FacingDir = 1;
             else if (h < -0.1f) FacingDir = -1;
 
+            // プレイヤー自身（transform）ではなく、見た目（visualTransform）だけを回転させる
+            if (visualTransform != null)
+            {
+                if (FacingDir == 1)
+                {
+                    visualTransform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+                }
+                else if (FacingDir == -1)
+                {
+                    visualTransform.localRotation = Quaternion.Euler(0f, -90f, 0f);
+                }
+            }
+
+
             // キー入力（h）が左右どちらかにあれば歩きアニメーションをON、なければOFF
             if (anim != null)
             {
@@ -178,11 +196,6 @@ public class Player : MonoBehaviour
             }
     }
 
-        // 箱の「つかむ・離す」のキー入力チェック
-        if (Input.GetKeyDown(grabKey))
-        {
-            HandleGrabDrop();
-        }
 
         // ジャンプの入力判定
         if (Input.GetKeyDown(KeyCode.Space))
@@ -311,43 +324,12 @@ public class Player : MonoBehaviour
         Debug.Log("空気が抜けて元に戻った。");
     }
 
-    void HandleGrabDrop()
-    {
-        if (heldBox != null)
-        {
-            heldBox.Drop(transform);
-            heldBox = null;
-        }
-        else
-        {
-            Vector3 checkPos = transform.position + transform.forward * 0.5f;
-
-            Collider[] colliders = Physics.OverlapSphere(checkPos, pickupRange);
-            foreach (var col in colliders)
-            {
-                Box box = col.GetComponent<Box>();
-                if (box == null) box = col.GetComponentInParent<Box>();
-
-                if (box != null)
-                {
-                    box.TryPickup(transform, holdPoint);
-                    heldBox = box;
-                    break;
-                }
-            }
-        }
-    }
-
+    
     public void Split()
     {
         if (isSplit) return;
         isSplit = true;
 
-        if (heldBox != null)
-        {
-            heldBox.Drop(transform);
-            heldBox = null;
-        }
 
         Camera cam = GetComponentInChildren<Camera>();
 

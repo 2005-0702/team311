@@ -149,6 +149,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   rayDistance: 0.3
+  visualTransform: {fileID: 47856398457009368}
   normalScale: {x: 1, y: 1, z: 1}
   inflatedScale: {x: 1.5, y: 1.5, z: 1.5}
   airDashSpeed: 15
