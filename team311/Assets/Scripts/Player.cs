@@ -28,6 +28,8 @@ public class Player : MonoBehaviour
     bool isGrounded;
     bool isCrouching;
 
+   
+
     [Header("Ground Check")]
     public float groundCheckRadius = 0.3f;
     public LayerMask groundLayer; // 地面とみなすレイヤー
@@ -55,6 +57,14 @@ public class Player : MonoBehaviour
     // --- カメラ固定用フィールド ---
     private Camera cachedCamera;
     private Vector3 cameraWorldOffset;
+
+    [Header("Animation & Visual Settings")]
+    [Tooltip("MAYAのモデル（見た目）のオブジェクトをここにドラッグ＆ドロップしてください")]
+    public Transform visualTransform;
+
+    // アニメーターを制御するための変数
+    private Animator anim;
+
     private void Awake()
     {
         Debug.Log(
@@ -74,6 +84,9 @@ public class Player : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+
+        // モデルについているAnimatorを自動で取得する
+        anim = GetComponentInChildren<Animator>();
 
         // カメラのワールドオフセットをキャッシュ（プレイヤーのスケールに影響されない位置保持のため）
         cachedCamera = GetComponentInChildren<Camera>();
@@ -155,13 +168,34 @@ public class Player : MonoBehaviour
 
             if (h > 0.1f) FacingDir = 1;
             else if (h < -0.1f) FacingDir = -1;
-        }
 
-        // 箱の「つかむ・離す」のキー入力チェック
-        if (Input.GetKeyDown(grabKey))
-        {
-            HandleGrabDrop();
-        }
+            // プレイヤー自身（transform）ではなく、見た目（visualTransform）だけを回転させる
+            if (visualTransform != null)
+            {
+                if (FacingDir == 1)
+                {
+                    visualTransform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+                }
+                else if (FacingDir == -1)
+                {
+                    visualTransform.localRotation = Quaternion.Euler(0f, -90f, 0f);
+                }
+            }
+
+
+            // キー入力（h）が左右どちらかにあれば歩きアニメーションをON、なければOFF
+            if (anim != null)
+            {
+                // Mathf.Abs(h) > 0.1f は「左右どちらかにスティックやキーが倒されているか」という意味です
+                anim.SetBool("isWalking", Mathf.Abs(h) > 0.1f);
+            }
+            else
+            {
+            // 特殊アクション中などで操作できない時は歩きをOFFにする
+            if (anim != null) anim.SetBool("isWalking", false);
+            }
+    }
+
 
         // ジャンプの入力判定
         if (Input.GetKeyDown(KeyCode.Space))
@@ -290,43 +324,12 @@ public class Player : MonoBehaviour
         Debug.Log("空気が抜けて元に戻った。");
     }
 
-    void HandleGrabDrop()
-    {
-        if (heldBox != null)
-        {
-            heldBox.Drop(transform);
-            heldBox = null;
-        }
-        else
-        {
-            Vector3 checkPos = transform.position + transform.forward * 0.5f;
-
-            Collider[] colliders = Physics.OverlapSphere(checkPos, pickupRange);
-            foreach (var col in colliders)
-            {
-                Box box = col.GetComponent<Box>();
-                if (box == null) box = col.GetComponentInParent<Box>();
-
-                if (box != null)
-                {
-                    box.TryPickup(transform, holdPoint);
-                    heldBox = box;
-                    break;
-                }
-            }
-        }
-    }
-
+    
     public void Split()
     {
         if (isSplit) return;
         isSplit = true;
 
-        if (heldBox != null)
-        {
-            heldBox.Drop(transform);
-            heldBox = null;
-        }
 
         Camera cam = GetComponentInChildren<Camera>();
 
