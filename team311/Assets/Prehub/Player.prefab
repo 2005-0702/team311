@@ -119,7 +119,7 @@ CapsuleCollider:
   m_Radius: 0.4
   m_Height: 3
   m_Direction: 1
-  m_Center: {x: 0, y: 0.4, z: 0}
+  m_Center: {x: 0, y: 0.8, z: 0}
 --- !u!114 &4895994743349248227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -218,15 +218,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 99b2748c25ef5ae408052502c0ed8ba5, type: 3}
       propertyPath: m_LocalScale.x
-      value: 50
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 99b2748c25ef5ae408052502c0ed8ba5, type: 3}
       propertyPath: m_LocalScale.y
-      value: 50
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 99b2748c25ef5ae408052502c0ed8ba5, type: 3}
       propertyPath: m_LocalScale.z
-      value: 50
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 99b2748c25ef5ae408052502c0ed8ba5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -330,11 +330,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2208788718970995992, guid: 401b1a278c79ab74ab16cf78bd06b327, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.422
+      value: 4.73
       objectReference: {fileID: 0}
     - target: {fileID: 2208788718970995992, guid: 401b1a278c79ab74ab16cf78bd06b327, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -13.035
+      value: -19.79
       objectReference: {fileID: 0}
     - target: {fileID: 2208788718970995992, guid: 401b1a278c79ab74ab16cf78bd06b327, type: 3}
       propertyPath: m_LocalRotation.w
