@@ -1040,4 +1040,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9ff0172a5070314180a957e69c8d5d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpikeTrap
-  damageAmount: 1
+  gameOverSceneName: GameOverScene
