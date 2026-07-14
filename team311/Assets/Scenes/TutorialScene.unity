@@ -30890,6 +30890,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: 'Inflator '
       objectReference: {fileID: 0}
+    - target: {fileID: 7519861822954708101, guid: fcffd50deda0ceb41a0ab755552ec19d, type: 3}
+      propertyPath: eKeyUI
+      value: 
+      objectReference: {fileID: 244921637}
     - target: {fileID: 8133137295951150456, guid: fcffd50deda0ceb41a0ab755552ec19d, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.79187

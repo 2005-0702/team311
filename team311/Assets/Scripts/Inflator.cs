@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class Inflator : MonoBehaviour
 {
+    // EキーのUI（WorldCanvasやImage）を設定
+    public GameObject eKeyUI;
+
     private bool playerInZone = false;
     private Player playerScript;
 
@@ -13,7 +16,14 @@ public class Inflator : MonoBehaviour
             if (playerScript != null)
             {
                 playerScript.Inflate();
+
+                // EキーのUIを消す
+                if (eKeyUI != null)
+                {
+                    eKeyUI.SetActive(false);
+                }
             }
+           
         }
     }
 
@@ -27,6 +37,13 @@ public class Inflator : MonoBehaviour
         {
             playerInZone = true;
             playerScript = player;
+
+            // まだUIが表示されていなければ表示する
+            if (eKeyUI != null)
+            {
+                eKeyUI.SetActive(true);
+            }
+
             Debug.Log("空気入れの前に入った：Eキーで膨らむ");
         }
     }
@@ -41,6 +58,13 @@ public class Inflator : MonoBehaviour
         {
             playerInZone = false;
             playerScript = null;
+
+            // 範囲外に出たらUIを消す
+            if (eKeyUI != null)
+            {
+                eKeyUI.SetActive(false);
+            }
+
             Debug.Log("空気入れの前から離れた");
         }
     }
