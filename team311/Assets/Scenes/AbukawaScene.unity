@@ -2854,7 +2854,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c43b9f275cf9edc4b871e6cd027232cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Box
-  dropForwardImpulse: 1.5
 --- !u!54 &2056556428
 Rigidbody:
   m_ObjectHideFlags: 0
