@@ -546,7 +546,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c14df2775dff2174ab7c952ab0b187d4, type: 2}
+  - {fileID: 2100000, guid: d2ae76e3d01fdd749b8ef0086a9228e1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -587,11 +587,10 @@ Transform:
   m_GameObject: {fileID: 734228532}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -13.7, y: 3.7, z: -1.4897}
+  m_LocalPosition: {x: -13.7, y: 7.1, z: -1.4897}
   m_LocalScale: {x: 86.90608, y: 44.394207, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1507678987}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &742850862
@@ -679,7 +678,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 734228536}
+    m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 5543627092397535773, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -691,23 +690,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8139553016375264661, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1
+      value: 173.81216
       objectReference: {fileID: 0}
     - target: {fileID: 8139553016375264661, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1
+      value: 88.788414
       objectReference: {fileID: 0}
     - target: {fileID: 8139553016375264661, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.05
+      value: -13.26547
       objectReference: {fileID: 0}
     - target: {fileID: 8139553016375264661, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.017
+      value: 16.587341
       objectReference: {fileID: 0}
     - target: {fileID: 8139553016375264661, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 5.6
+      value: 4.1103
       objectReference: {fileID: 0}
     - target: {fileID: 8139553016375264661, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -715,11 +714,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8139553016375264661, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8139553016375264661, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8139553016375264661, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
       propertyPath: m_LocalRotation.z
@@ -908,7 +907,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a52e3a652d1a0c4cb7fdbc5923c75e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TitleManager
-  gameSceneName: StageSelect
+  gameSceneName: TutorialScene
 --- !u!4 &1394974619
 Transform:
   m_ObjectHideFlags: 0
@@ -924,11 +923,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1507678987 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 8139553016375264661, guid: f6b4a4ef9fc61714aab850222eb125a9, type: 3}
-  m_PrefabInstance: {fileID: 779038644}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -936,6 +930,7 @@ SceneRoots:
   - {fileID: 1287822245}
   - {fileID: 157259049}
   - {fileID: 734228536}
+  - {fileID: 779038644}
   - {fileID: 15837571}
   - {fileID: 742850865}
   - {fileID: 1394974619}

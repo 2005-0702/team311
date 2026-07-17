@@ -5,7 +5,8 @@ using UnityEngine.SceneManagement;
 public class CountdownTimer : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI countdownText; // TextMeshPro をアサイン
-    [SerializeField] private float startTime = 300f;        // 300秒 = 5分
+    [SerializeField, Range(0f, 600f), Tooltip("秒単位。デフォルトは300秒（5分）です。")]
+    private float startTime = 300f; // 300秒 = 5分
     [SerializeField] private string nextSceneName = "GameOverScene";          // 切り替え先
 
     private float currentTime;
