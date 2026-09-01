@@ -1,15 +1,25 @@
 using UnityEngine;
-using UnityEngine.SceneManagement; // シーンを切り替えるためにこれが必要です！
+using UnityEngine.SceneManagement; // シーンを切り替えるために必要
 
 public class TitleManager : MonoBehaviour
 {
-    [Header("移行先のゲームシーンの名前を正確に書いてね")]
-    [SerializeField] private string gameSceneName = "SampleScene";
+    [Header("各ボタンの移動先シーン名")]
+    [SerializeField] private string stageSelectSceneName = "StageSelect"; // ゲームスタート時の行き先
+    [SerializeField] private string tutorialSceneName = "Tutorial";       // チュートリアル時の行き先
 
-    // ボタンが押されたときに実行される関数
+    /// <summary>
+    /// 「ゲームスタート」ボタンが押されたときに実行
+    /// </summary>
     public void OnStartButton()
     {
-        // 指定した名前のシーンを読み込む
-        SceneManager.LoadScene(gameSceneName);
+        SceneManager.LoadScene(stageSelectSceneName);
+    }
+
+    /// <summary>
+    /// 「チュートリアル」ボタンが押されたときに実行
+    /// </summary>
+    public void OnTutorialButton()
+    {
+        SceneManager.LoadScene(tutorialSceneName);
     }
 }
