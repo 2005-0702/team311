@@ -28,7 +28,7 @@ public class Player : MonoBehaviour
     bool isGrounded;
     bool isCrouching;
 
-   
+
 
     [Header("Ground Check")]
     public float groundCheckRadius = 0.3f;
@@ -191,10 +191,10 @@ public class Player : MonoBehaviour
             }
             else
             {
-            // 特殊アクション中などで操作できない時は歩きをOFFにする
-            if (anim != null) anim.SetBool("isWalking", false);
+                // 特殊アクション中などで操作できない時は歩きをOFFにする
+                if (anim != null) anim.SetBool("isWalking", false);
             }
-    }
+        }
 
 
         // ジャンプの入力判定
@@ -248,8 +248,11 @@ public class Player : MonoBehaviour
     // 足元からのRayで一方通行の床を制御する関数
     void HandleOneWayFloor()
     {
-        // プレイヤーのコライダーの一番底面（足元）の位置を計算
-        Vector3 footPos = transform.TransformPoint(new Vector3(0, colliderBottomY, 0));
+        if (col == null) return;
+
+        // プレイヤーのコライダーのワールド底面（足元）の位置を計算
+        float bottomWorldY = col.bounds.min.y;
+        Vector3 footPos = new Vector3(transform.position.x, bottomWorldY + 0.01f, transform.position.z);
 
         // 足元から真下に向けてRay（光線）を飛ばす
         RaycastHit hit;
@@ -324,7 +327,7 @@ public class Player : MonoBehaviour
         Debug.Log("空気が抜けて元に戻った。");
     }
 
-    
+
     public void Split()
     {
         if (isSplit) return;
@@ -362,8 +365,20 @@ public class Player : MonoBehaviour
 
     void CheckGrounded()
     {
-        Vector3 footPos = transform.TransformPoint(new Vector3(0, colliderBottomY + 0.1f, 0));
-        Collider[] cols = Physics.OverlapSphere(footPos, groundCheckRadius, groundLayer == 0 ? ~0 : groundLayer);
+        if (col == null)
+        {
+            isGrounded = false;
+            return;
+        }
+
+        // ワールド空間でのコライダー底面の位置を使う（transform とローカル値のズレ対策）
+        float bottomWorldY = col.bounds.min.y;
+        Vector3 footPos = new Vector3(transform.position.x, bottomWorldY + 0.01f, transform.position.z);
+
+        // groundLayer が未設定（0）のときは全レイヤーをチェックする
+        int layerMask = (groundLayer == 0) ? ~0 : (int)groundLayer;
+
+        Collider[] cols = Physics.OverlapSphere(footPos, groundCheckRadius, layerMask);
 
         bool lastGrounded = isGrounded;
         isGrounded = false;
@@ -388,8 +403,12 @@ public class Player : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Vector3 footPos = transform.TransformPoint(new Vector3(0, colliderBottomY, 0));
-        Gizmos.DrawWireSphere(footPos, groundCheckRadius);
+        // Gizmosにワールド底面位置を描画
+        if (col != null)
+        {
+            Vector3 footPos = new Vector3(transform.position.x, col.bounds.min.y + 0.01f, transform.position.z);
+            Gizmos.DrawWireSphere(footPos, groundCheckRadius);
+        }
 
         Gizmos.color = Color.yellow;
         Vector3 checkPos = transform.position + transform.forward * 0.5f;
