@@ -4300,6 +4300,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 712045727251319637, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
+      propertyPath: fadePanel
+      value: 
+      objectReference: {fileID: 375168222}
     - target: {fileID: 1777145714781756634, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -4310,7 +4314,7 @@ PrefabInstance:
       objectReference: {fileID: 1827251958}
     - target: {fileID: 1789712604813973856, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_VersionIndex
-      value: 10
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 2049620833508227427, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Name
@@ -7142,17 +7146,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 712045727251319637, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
+      propertyPath: fadePanel
+      value: 
+      objectReference: {fileID: 375168222}
+    - target: {fileID: 712045727251319637, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
+      propertyPath: fadeDuration
+      value: 1.5
+      objectReference: {fileID: 0}
     - target: {fileID: 1777145714781756634, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 1827251958}
+      objectReference: {fileID: 1331441039}
     - target: {fileID: 1789712604813973856, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1331441039}
     - target: {fileID: 1789712604813973856, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_VersionIndex
-      value: 10
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 2049620833508227427, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Name
@@ -8102,7 +8114,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.19245279, g: 0.19136344, b: 0.19136344, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -10124,15 +10136,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5444317750704152843, guid: 1bacc4ad6fcafb949973d45d1c30fd69, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 123.14
+      value: 122.48
       objectReference: {fileID: 0}
     - target: {fileID: 5444317750704152843, guid: 1bacc4ad6fcafb949973d45d1c30fd69, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 13.04
+      value: 13.07
       objectReference: {fileID: 0}
     - target: {fileID: 5444317750704152843, guid: 1bacc4ad6fcafb949973d45d1c30fd69, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.13
+      value: 0.33
       objectReference: {fileID: 0}
     - target: {fileID: 5444317750704152843, guid: 1bacc4ad6fcafb949973d45d1c30fd69, type: 3}
       propertyPath: m_LocalRotation.w
@@ -21446,11 +21458,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7813730508281294162, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 146.09
+      value: 146.38
       objectReference: {fileID: 0}
     - target: {fileID: 7813730508281294162, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 12.11
+      value: 12.2
       objectReference: {fileID: 0}
     - target: {fileID: 7813730508281294162, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
       propertyPath: m_LocalPosition.z
@@ -22200,17 +22212,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1261157802}
     m_Modifications:
+    - target: {fileID: 712045727251319637, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
+      propertyPath: fadePanel
+      value: 
+      objectReference: {fileID: 375168222}
     - target: {fileID: 1777145714781756634, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 1827251958}
+      objectReference: {fileID: 1949876853}
     - target: {fileID: 1789712604813973856, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1949876853}
     - target: {fileID: 1789712604813973856, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_VersionIndex
-      value: 10
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 2049620833508227427, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Name
@@ -23396,6 +23412,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeadBlock
   gameOverSceneName: GameOverScene
+  fadePanel: {fileID: 375168222}
+  fadeDuration: 1.5
 --- !u!65 &1175076831
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -35780,17 +35798,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 193643317}
     m_Modifications:
+    - target: {fileID: 712045727251319637, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
+      propertyPath: fadePanel
+      value: 
+      objectReference: {fileID: 375168222}
     - target: {fileID: 1777145714781756634, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 1949876853}
+      objectReference: {fileID: 607658056}
     - target: {fileID: 1789712604813973856, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 607658056}
     - target: {fileID: 1789712604813973856, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_VersionIndex
-      value: 10
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 2049620833508227427, guid: fba58f81ea0666246a1404f253be1a56, type: 3}
       propertyPath: m_Name

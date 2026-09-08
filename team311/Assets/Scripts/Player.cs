@@ -28,6 +28,8 @@ public class Player : MonoBehaviour
     bool isGrounded;
     bool isCrouching;
 
+    // プレイヤーが操作出来るか
+    private bool canMove = true;
 
 
     [Header("Ground Check")]
@@ -161,7 +163,8 @@ public class Player : MonoBehaviour
 
         // --- 移動処理 ---
         float h = Input.GetAxis("Horizontal");
-        if (specialActionTimer <= 0f)
+
+        if (canMove && specialActionTimer <= 0f)
         {
             Vector3 move = new Vector3(h, 0, 0) * moveSpeed;
             rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
@@ -196,6 +199,11 @@ public class Player : MonoBehaviour
             }
         }
 
+        else
+        {
+            if (anim != null)
+                anim.SetBool("isWalking", false);
+        }
 
         // ジャンプの入力判定
         if (Input.GetKeyDown(KeyCode.Space))
@@ -419,6 +427,19 @@ public class Player : MonoBehaviour
     {
         get { return isGrounded; }
     }
+    public void SetMoveEnabled(bool enabled)
+    {
+        canMove = enabled;
+
+        if (!enabled && rb != null)
+        {
+            // 横方向の移動を止める
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+        }
+    }
+
+
+
 
     // --- 省略されていた残りのメンバ変数や関数群 ---
     [Header("Squash Settings")]
