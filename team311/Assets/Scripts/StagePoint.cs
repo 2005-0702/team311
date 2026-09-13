@@ -6,6 +6,7 @@ public class StagePoint : MonoBehaviour
     public string sceneName;
 
     [Header("ステージ順序 (0 から)")]
+    [Tooltip("StageProgressで解放判定に使う番号。左から順に 0,1,2,3... と振ってください。")]
     public int stageIndex = 0;
 
     [Header("接続")]
@@ -14,31 +15,31 @@ public class StagePoint : MonoBehaviour
     public StagePoint left;
     public StagePoint right;
 
-    [Header("表示 (省略時はこのオブジェクトの SpriteRenderer を使用)")]
-    public SpriteRenderer blockRenderer;
-
-    [Header("色設定")]
-    public Color lockedColor = new Color(0.25f, 0.25f, 0.25f, 1f);
-    public Color clearedColor = Color.yellow;
-    public Color normalColor = Color.white;
+    [Header("見た目の切り替え")]
+    [Tooltip("未解放（挑戦できない）のときに表示するオブジェクト。例：赤い見た目のオブジェクト")]
+    public GameObject lockedObject;
+    [Tooltip("解放済み（挑戦できる）のときに表示するオブジェクト。例：青い見た目のオブジェクト")]
+    public GameObject unlockedObject;
+    [Tooltip("クリア済みのときに表示するオブジェクト。未設定ならunlockedObjectのまま表示")]
+    public GameObject clearedObject;
 
     // 状態 (外部から参照できるようにプロパティ風に公開)
     public bool IsLocked { get; private set; }
     public bool IsCleared { get; private set; }
 
-    // Inspector 上で反映しやすいように OnValidate を用意
-    void OnValidate()
+    void Start()
     {
-        if (blockRenderer == null)
-        {
-            blockRenderer = GetComponent<SpriteRenderer>();
-        }
-        // エディタで色を即時反映したい場合は有効化（実行中は Start 等から UpdateVisual を呼ぶ）
-        if (blockRenderer != null)
-        {
-            var col = IsCleared ? clearedColor : (IsLocked ? lockedColor : normalColor);
-            blockRenderer.color = col;
-        }
+        // StageProgressの記録から、今の状態（クリア済みか／解放されているか）を反映する
+        RefreshFromProgress();
+    }
+
+    // StageProgressの記録を読み直して見た目を更新する
+    // （ステージセレクトに戻ってきた時などに呼び出す）
+    public void RefreshFromProgress()
+    {
+        bool cleared = StageProgress.IsCleared(stageIndex);
+        bool locked = !StageProgress.IsUnlocked(stageIndex);
+        UpdateVisual(locked, cleared);
     }
 
     // ロック状態 / クリア状態に応じて見た目を更新する
@@ -47,25 +48,10 @@ public class StagePoint : MonoBehaviour
         IsLocked = locked;
         IsCleared = cleared;
 
-        if (blockRenderer == null)
-        {
-            blockRenderer = GetComponent<SpriteRenderer>();
-        }
+        bool showCleared = cleared && clearedObject != null;
 
-        if (blockRenderer != null)
-        {
-            if (cleared)
-            {
-                blockRenderer.color = clearedColor;
-            }
-            else if (locked)
-            {
-                blockRenderer.color = lockedColor;
-            }
-            else
-            {
-                blockRenderer.color = normalColor;
-            }
-        }
+        if (lockedObject != null) lockedObject.SetActive(locked && !showCleared);
+        if (unlockedObject != null) unlockedObject.SetActive(!locked && !showCleared);
+        if (clearedObject != null) clearedObject.SetActive(showCleared);
     }
 }
