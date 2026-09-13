@@ -17,10 +17,27 @@ public class StageSelect : MonoBehaviour
     [Header("フェード後の待機時間（秒）")]
     public float revealDelay = 2.0f;
 
+    [Tooltip("目的地到着とみなす水平距離のしきい値")]
+    public float arriveThreshold = 5.0f;
+
+    [Header("高さ設定")]
+    [Tooltip("ONにすると、開始位置のYではなく下のFixed Y Valueを使う")]
+    public bool overrideHeight = false;
+    [Tooltip("overrideHeightがONのときに使う固定Y座標")]
+    public float fixedYValue = 0f;
+
     private StagePoint currentStage;
     private StagePoint targetStage;
     private bool isMoving;
     bool IsLoading = false;
+
+    // 常にこのY座標を維持する（開始位置の高さ、またはfixedYValueで固定）。Raycastによる接地判定は行わない。
+    private float fixedY;
+
+    // ステージセレクト中は物理演算(重力)を切って、Transform操作だけで移動させる
+    private Rigidbody rb;
+    private bool originalIsKinematic;
+    private bool originalUseGravity;
 
     // フェード用
     private GameObject _fadeCanvasGO;
@@ -38,6 +55,23 @@ public class StageSelect : MonoBehaviour
 
         currentStage = startStage;
         transform.position = currentStage.transform.position;
+
+        // このY座標を「常に維持する高さ」として記録する
+        // overrideHeightがONなら手動指定した値を使う
+        fixedY = overrideHeight ? fixedYValue : transform.position.y;
+
+        // Rigidbodyがある場合、ステージセレクト中は重力・物理演算を止める。
+        // 台と台の間に隙間があっても、重力に引っ張られて落下しないようにするため。
+        rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            originalIsKinematic = rb.isKinematic;
+            originalUseGravity = rb.useGravity;
+
+            rb.linearVelocity = Vector3.zero;
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
     }
 
     void Update()
@@ -49,6 +83,9 @@ public class StageSelect : MonoBehaviour
             return;
         }
 
+        // 移動していない間も、常に同じ高さを維持する（浮き・落下防止）
+        EnforceFixedHeight();
+
         // 行き先を決定する（独立したif文にすることで入力をクリアに）
         if (Input.GetKeyDown(KeyCode.RightArrow)) MoveTo(currentStage.right, "右");
         if (Input.GetKeyDown(KeyCode.LeftArrow)) MoveTo(currentStage.left, "左");
@@ -58,7 +95,11 @@ public class StageSelect : MonoBehaviour
         // ステージ決定
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            if (!string.IsNullOrEmpty(currentStage.sceneName) && !IsLoading)
+            if (currentStage.IsLocked)
+            {
+                Debug.LogWarning($"{currentStage.name} はまだ解放されていません。");
+            }
+            else if (!string.IsNullOrEmpty(currentStage.sceneName) && !IsLoading)
             {
                 Debug.Log("Scene読み込み(フェード開始) : " + currentStage.sceneName);
                 StartFadeAndLoad(currentStage.sceneName);
@@ -80,20 +121,40 @@ public class StageSelect : MonoBehaviour
             return;
         }
 
+        // ロックされている（未解放の）ステージには移動させない
+        if (next.IsLocked)
+        {
+            Debug.Log($"{next.name} はまだ解放されていません。");
+            return;
+        }
+
         targetStage = next;
         isMoving = true;
     }
 
     void MovePlayer()
     {
-        transform.position = Vector3.MoveTowards(
-            transform.position,
-            targetStage.transform.position,
-            moveSpeed * Time.deltaTime);
+        Vector3 targetPos = targetStage.transform.position;
+        Vector3 currentPos = transform.position;
 
-        if (Vector3.Distance(transform.position, targetStage.transform.position) < 5.0f)
+        // 水平方向（X, Z）だけ目的地へ向かって移動する。Yは常にfixedYで固定。
+        Vector3 horizontalTarget = new Vector3(targetPos.x, fixedY, targetPos.z);
+        transform.position = Vector3.MoveTowards(currentPos, horizontalTarget, moveSpeed * Time.deltaTime);
+
+        // 念のため、移動後も高さを固定値に強制する
+        EnforceFixedHeight();
+
+        float horizontalDistance = Vector2.Distance(
+            new Vector2(transform.position.x, transform.position.z),
+            new Vector2(targetPos.x, targetPos.z));
+
+        if (horizontalDistance < arriveThreshold)
         {
-            transform.position = targetStage.transform.position;
+            Vector3 finalPos = transform.position;
+            finalPos.x = targetPos.x;
+            finalPos.y = fixedY;
+            finalPos.z = targetPos.z;
+            transform.position = finalPos;
 
             currentStage = targetStage;
             targetStage = null;
@@ -104,10 +165,28 @@ public class StageSelect : MonoBehaviour
         }
     }
 
+    // Y座標を常にfixedYに強制する（他の要因で高さがズレても常に同じ高さを維持する）
+    void EnforceFixedHeight()
+    {
+        if (Mathf.Abs(transform.position.y - fixedY) > 0.0001f)
+        {
+            Vector3 pos = transform.position;
+            pos.y = fixedY;
+            transform.position = pos;
+        }
+    }
+
     private void StartFadeAndLoad(string sceneName)
     {
         if (IsLoading) return;
         IsLoading = true;
+
+        // ゲーム本編に入る前に、Rigidbodyを元の物理設定に戻しておく
+        if (rb != null)
+        {
+            rb.isKinematic = originalIsKinematic;
+            rb.useGravity = originalUseGravity;
+        }
 
         CreateFadeCanvasIfNeeded();
 
