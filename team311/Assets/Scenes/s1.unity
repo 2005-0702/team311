@@ -9079,6 +9079,10 @@ PrefabInstance:
       propertyPath: fadePanel
       value: 
       objectReference: {fileID: 1499020594}
+    - target: {fileID: 1952815889290249293, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
+      propertyPath: stageIndex
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 3989714842577808518, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
       propertyPath: m_Enabled
       value: 0

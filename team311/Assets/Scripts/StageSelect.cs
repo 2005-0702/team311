@@ -18,7 +18,7 @@ public class StageSelect : MonoBehaviour
     public float revealDelay = 2.0f;
 
     [Tooltip("目的地到着とみなす水平距離のしきい値")]
-    public float arriveThreshold = 5.0f;
+    public float arriveThreshold = 0.005f;
 
     [Header("高さ設定")]
     [Tooltip("ONにすると、開始位置のYではなく下のFixed Y Valueを使う")]
