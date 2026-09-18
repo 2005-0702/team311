@@ -185,20 +185,12 @@ public class Player : MonoBehaviour
                 }
             }
 
-
             // キー入力（h）が左右どちらかにあれば歩きアニメーションをON、なければOFF
             if (anim != null)
             {
-                // Mathf.Abs(h) > 0.1f は「左右どちらかにスティックやキーが倒されているか」という意味です
                 anim.SetBool("isWalking", Mathf.Abs(h) > 0.1f);
             }
-            else
-            {
-                // 特殊アクション中などで操作できない時は歩きをOFFにする
-                if (anim != null) anim.SetBool("isWalking", false);
-            }
         }
-
         else
         {
             if (anim != null)
@@ -238,6 +230,25 @@ public class Player : MonoBehaviour
             {
                 AirDash();
             }
+        }
+
+        // ==========================================
+        // 🛠️ デバッグ機能（テスト用）
+        // ==========================================
+
+        // 【Bキー】強制クリア（GoalSceneへ遷移）
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            Debug.Log("【デバッグ】Bキーが押されたため強制クリアを実行します。");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("GoalScene");
+        }
+
+        // 【Rキー】シーンリトライ（現在のステージを再読み込み）
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            Debug.Log("【デバッグ】Rキーが押されたため現在のシーンを再読み込みします。");
+            string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            UnityEngine.SceneManagement.SceneManager.LoadScene(currentScene);
         }
     }
 
