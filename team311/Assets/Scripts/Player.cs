@@ -203,6 +203,8 @@ public class Player : MonoBehaviour
             if (isGrounded)
             {
                 jumpRequested = true;
+                //地上ジャンプ時にジャンプアニメーションを再生
+                if (anim != null) anim.SetTrigger("doJump");
             }
             else if (jumpCount < maxAirJumpCount && specialActionTimer <= 0f)
             {
