@@ -2,20 +2,25 @@ using UnityEngine;
 
 public class MovingUpDown : MonoBehaviour
 {
-    public float moveDistance = 2f; // è„â∫Ç…ìÆÇ≠ãóó£
-    public float moveSpeed = 2f;    // ë¨Ç≥
+    public float moveDistance = 2f;
+    public float moveSpeed = 2f;
 
     private Vector3 startPos;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private Rigidbody rb;
+
     void Start()
     {
         startPos = transform.position;
+        rb = GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         float y = Mathf.Sin(Time.time * moveSpeed) * moveDistance;
-        transform.position = startPos + new Vector3(0, y, 0);
+
+        Vector3 targetPos =
+            startPos + new Vector3(0f, y, 0f);
+
+        rb.MovePosition(targetPos);
     }
 }
