@@ -29,29 +29,23 @@ public class Goal : MonoBehaviour
         {
             if (isGoal)
                 return;
-            // 鍵を持っているか確認
-            if (player.HasKey)
-            {
-                isGoal = true;
 
-                Debug.Log("鍵を持っているので、ステージクリア！");
+            // 鍵のチェックを外し、プレイヤーが触れたら即クリアにする
+            isGoal = true;
 
-                // 進行度を更新
-                int saved = PlayerPrefs.GetInt("HighestClearedStage", -1);
-                int next = Mathf.Max(saved, stageIndex);
+            Debug.Log("ステージクリア！");
 
-                PlayerPrefs.SetInt("HighestClearedStage", next);
-                PlayerPrefs.Save();
+            // 進行度を更新
+            int saved = PlayerPrefs.GetInt("HighestClearedStage", -1);
+            int next = Mathf.Max(saved, stageIndex);
 
-                Debug.Log($"HighestClearedStage を {next} に更新しました。");
+            PlayerPrefs.SetInt("HighestClearedStage", next);
+            PlayerPrefs.Save();
 
-                // ゴール演出開始
-                StartCoroutine(GoalEffect());
-            }
-            else
-            {
-                Debug.Log("鍵がありません！ステージ内の鍵を探してください。");
-            }
+            Debug.Log($"HighestClearedStage を {next} に更新しました。");
+
+            // ゴール演出開始
+            StartCoroutine(GoalEffect());
         }
     }
 
