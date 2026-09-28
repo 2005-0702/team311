@@ -205,6 +205,7 @@ public class Player : MonoBehaviour
                 jumpRequested = true;
                 //地上ジャンプ時にジャンプアニメーションを再生
                 if (anim != null) anim.SetTrigger("doJump");
+                AudioManager.PlaySE("Jump");
             }
             else if (jumpCount < maxAirJumpCount && specialActionTimer <= 0f)
             {
@@ -313,7 +314,6 @@ public class Player : MonoBehaviour
 
     private void AirJump()
     {
-        Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
             specialActionTimer = 0.3f;
@@ -321,12 +321,12 @@ public class Player : MonoBehaviour
             rb.AddForce(Vector3.up * 14f, ForceMode.Impulse);
             jumpCount++;
         }
+        AudioManager.PlaySE("Jump");
         Deflate();
     }
 
     private void AirDash()
     {
-        Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
             specialActionTimer = 1.0f;
@@ -462,22 +462,40 @@ public class Player : MonoBehaviour
 
     bool isSquashed = false;
     Vector3 originalScale;
+    private Coroutine squashRecoveryCoroutine;
 
+    // 潰れた見た目にする。すでに潰れていても、進行中の回復タイマーがあれば止める。
+    // （挟まれ続けている間、毎フレーム呼び続けることで回復タイマーが動き出さないようにするため）
     public void Squash()
     {
-        if (isSquashed) return;
-        isSquashed = true;
+        // 回復待ちだったとしても、潰され続けているならキャンセルする
+        if (squashRecoveryCoroutine != null)
+        {
+            StopCoroutine(squashRecoveryCoroutine);
+            squashRecoveryCoroutine = null;
+        }
 
+        if (isSquashed) return; // 見た目はすでに潰れているので、これ以上は何もしない
+
+        isSquashed = true;
         isGrounded = true;
 
         Debug.Log("Player was squashed!");
         originalScale = transform.localScale;
         transform.localScale = new Vector3(
-            originalScale.x * 2.0f,
-            originalScale.y * 0.2f,
+            originalScale.x * squashedScaleX,
+            originalScale.y * squashedScaleY,
             originalScale.z
         );
-        StartCoroutine(RecoverFromSquash());
+    }
+
+    // プレスなどから離れた時に呼ぶ。ここで初めて元に戻るまでのカウントダウンが始まる。
+    public void ReleaseSquash()
+    {
+        if (!isSquashed) return;
+        if (squashRecoveryCoroutine != null) return; // すでに回復待ち中なら二重に開始しない
+
+        squashRecoveryCoroutine = StartCoroutine(RecoverFromSquash());
     }
 
     IEnumerator RecoverFromSquash()
@@ -486,6 +504,7 @@ public class Player : MonoBehaviour
         transform.localScale = originalScale;
         isSquashed = false;
         isGrounded = true;
+        squashRecoveryCoroutine = null;
         Debug.Log("Player recovered from squash!");
     }
 
