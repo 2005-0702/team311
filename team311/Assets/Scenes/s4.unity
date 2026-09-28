@@ -7176,7 +7176,7 @@ PrefabInstance:
     - target: {fileID: 1952815889290249293, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
       propertyPath: fadePanel
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 108039772}
     - target: {fileID: 1952815889290249293, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
       propertyPath: stageIndex
       value: 3
@@ -7199,7 +7199,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7813730508281294162, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.83
+      value: -2.8
       objectReference: {fileID: 0}
     - target: {fileID: 7813730508281294162, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
       propertyPath: m_LocalPosition.y
@@ -7207,7 +7207,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7813730508281294162, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.77
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 7813730508281294162, guid: 6d4d85f1639f11342978142d6daabb19, type: 3}
       propertyPath: m_LocalRotation.w
