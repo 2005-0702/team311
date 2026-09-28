@@ -9,9 +9,9 @@ using UnityEngine.SceneManagement;
 // チームでシーンファイルを触ることによるコンフリクトが起きない。
 //
 // 【音声ファイルの置き方】
-// 次のフォルダを作って、その中にAudioClipを置く：
-//   Assets/Resources/Audio/BGM/  ← BGM用（例：StageSelect.mp3, StagePlay.mp3）
-//   Assets/Resources/Audio/SE/   ← 効果音用（例：Jump.wav, Clear.wav）
+// Resourcesフォルダの中に、次の構成でAudioClipを置く：
+//   Resources/Audio/BGM/  ← BGM用（例：StageSelect.wav, StagePlay.wav）
+//   Resources/Audio/SE/   ← 効果音用（例：Jump.wav）
 // ファイル名がそのまま呼び出す時の名前になる（拡張子は書かない）。
 //
 // 【呼び出し方】どのスクリプトからでもこう書くだけでいい：
@@ -19,9 +19,8 @@ using UnityEngine.SceneManagement;
 //   AudioManager.PlayBGM("StagePlay");
 //
 // 【シーンに応じた自動BGM切り替え】
-// stageSelectSceneNamesに書いてあるシーン名なら自動でBGM("StageSelect")、
+// StageSelectSceneNamesに書いてあるシーン名なら自動でBGM("StageSelect")、
 // それ以外のシーンでは自動でBGM("StagePlay")を流す。
-// 手動でPlayBGMを呼んでいなくても、シーン切り替えだけで自動的に鳴る。
 public static class AudioManager
 {
     // ここに書いたシーン名は「ステージセレクト」として扱う。それ以外は全部「ステージプレイ中」扱い。
@@ -33,9 +32,26 @@ public static class AudioManager
     private static AudioRunner runner;
     private static readonly Dictionary<string, AudioClip> clipCache = new Dictionary<string, AudioClip>();
     private static string currentBgmName = null;
+    private static bool sceneHooked = false;
 
     public static float BgmVolume = 0.5f;
     public static float SeVolume = 0.8f;
+
+    // 【重要】Unityの「Reload Domain」をオフにしている場合、前回の再生時のstatic変数が
+    // 残ったままになり、BGMが二度と鳴らなくなることがある。
+    // それを防ぐため、再生開始のたびにstatic変数を必ず初期化する。
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        if (sceneHooked)
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+        sceneHooked = false;
+        runner = null;
+        currentBgmName = null;
+        clipCache.Clear();
+    }
 
     // ゲーム開始時に自動で1回だけ呼ばれ、常駐用オブジェクトを作る
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -46,9 +62,19 @@ public static class AudioManager
         var go = new GameObject("AudioManager (auto-generated)");
         runner = go.AddComponent<AudioRunner>();
         Object.DontDestroyOnLoad(go);
+        Debug.Log("AudioManager: 起動しました。");
 
-        SceneManager.sceneLoaded += (scene, mode) => UpdateBgmForScene(scene.name);
+        if (!sceneHooked)
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            sceneHooked = true;
+        }
         UpdateBgmForScene(SceneManager.GetActiveScene().name);
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        UpdateBgmForScene(scene.name);
     }
 
     // シーン名を見て、自動でBGMを切り替える（同じカテゴリのままなら何もしない＝途切れさせない）
@@ -76,6 +102,7 @@ public static class AudioManager
 
         currentBgmName = clipName;
         runner.PlayBgm(clip, BgmVolume);
+        Debug.Log($"AudioManager: BGM '{clipName}' を再生します。");
     }
 
     public static void StopBGM()
@@ -97,18 +124,22 @@ public static class AudioManager
         }
 
         runner.PlaySe(clip, SeVolume);
+        Debug.Log($"AudioManager: SE '{clipName}' を再生します。");
     }
 
     private static AudioClip LoadClip(string folder, string clipName)
     {
         string key = folder + clipName;
-        if (clipCache.TryGetValue(key, out AudioClip cached))
+        if (clipCache.TryGetValue(key, out AudioClip cached) && cached != null)
         {
             return cached;
         }
 
         AudioClip loaded = Resources.Load<AudioClip>(key);
-        clipCache[key] = loaded; // 見つからなくてもnullをキャッシュして、毎回検索し直さないようにする
+        if (loaded != null)
+        {
+            clipCache[key] = loaded; // 見つかった時だけキャッシュする（見つからなかった時は次回また探す）
+        }
         return loaded;
     }
 
@@ -123,10 +154,12 @@ public static class AudioManager
             bgmSource = gameObject.AddComponent<AudioSource>();
             bgmSource.loop = true;
             bgmSource.playOnAwake = false;
+            bgmSource.spatialBlend = 0f; // 2D音声（距離で小さくならない）
 
             seSource = gameObject.AddComponent<AudioSource>();
             seSource.loop = false;
             seSource.playOnAwake = false;
+            seSource.spatialBlend = 0f;
         }
 
         public void PlayBgm(AudioClip clip, float volume)
