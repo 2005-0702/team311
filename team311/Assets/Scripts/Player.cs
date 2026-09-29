@@ -434,6 +434,21 @@ public class Player : MonoBehaviour
         Gizmos.color = Color.yellow;
         Vector3 checkPos = transform.position + transform.forward * 0.5f;
         Gizmos.DrawWireSphere(checkPos, pickupRange);
+
+        // 潰されている間、上のブロックチェック範囲をシーン上に表示する（緑=検出可、実際に色分けはしないが位置確認用）
+        if (isSquashed)
+        {
+            Gizmos.color = Color.cyan;
+            Vector3 halfExtents = new Vector3(
+                preSquashExtents.x * squashCheckSizeMultiplier,
+                squashCheckThickness * 0.5f,
+                preSquashExtents.z * squashCheckSizeMultiplier
+            );
+            Vector3 topCenter = new Vector3(transform.position.x, transform.position.y + preSquashTopOffsetY, transform.position.z);
+            Gizmos.matrix = Matrix4x4.TRS(topCenter, preSquashRotation, Vector3.one);
+            Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2f);
+            Gizmos.matrix = Matrix4x4.identity;
+        }
     }
 
     public bool IsGrounded
@@ -458,24 +473,45 @@ public class Player : MonoBehaviour
     [Header("Squash Settings")]
     public float squashedScaleY = 0.2f;
     public float squashedScaleX = 2.0f;
+    [Tooltip("潰されてから、上下のブロックチェックを始めるまでの待ち時間（秒）")]
     public float recoveryDelay = 8f;
+    [Tooltip("上下のブロック判定で、元のコライダーの横幅・奥行きに対してどれくらい余裕を持たせるか（1.0で元のサイズそのまま）")]
+    public float squashCheckSizeMultiplier = 1.0f;
+    [Tooltip("上下のブロック判定の厚み（薄すぎるとすり抜け判定になりやすいので0.1〜0.3程度を推奨）")]
+    public float squashCheckThickness = 0.2f;
+    [Tooltip("「挟んでいるブロック」とみなすレイヤー。未設定(Nothing)なら全レイヤーを対象にする")]
+    public LayerMask squashBlockLayer;
 
     bool isSquashed = false;
     Vector3 originalScale;
-    private Coroutine squashRecoveryCoroutine;
+    // 潰す直前（まだ元の大きさの時）の、コライダーの情報一式
+    Vector3 preSquashCenter;
+    Vector3 preSquashExtents;
+    Quaternion preSquashRotation;
+    float preSquashTopY;
+    float preSquashBottomY;
+    // 潰す前の「中心から頭上までの高さ」。これを現在位置に足すことで、
+    // プレイヤーが動いてもちゃんと追従してチェックできるようにする。
+    float preSquashTopOffsetY;
+    private Coroutine squashRoutine;
 
-    // 潰れた見た目にする。すでに潰れていても、進行中の回復タイマーがあれば止める。
-    // （挟まれ続けている間、毎フレーム呼び続けることで回復タイマーが動き出さないようにするため）
+    // 潰れた見た目にする。
     public void Squash()
     {
-        // 回復待ちだったとしても、潰され続けているならキャンセルする
-        if (squashRecoveryCoroutine != null)
-        {
-            StopCoroutine(squashRecoveryCoroutine);
-            squashRecoveryCoroutine = null;
-        }
-
         if (isSquashed) return; // 見た目はすでに潰れているので、これ以上は何もしない
+
+        // 潰れて縮む前に、今の（元の大きさの）コライダー情報を記録しておく。
+        // 潰れた後はコライダーが縮んで隙間ができてしまうので、サイズ・厚みの基準は
+        // 常にこの「元の状態」を使う。ただし位置は毎フレーム現在地を追従させる。
+        if (col != null)
+        {
+            preSquashCenter = col.bounds.center;
+            preSquashExtents = col.bounds.extents;
+            preSquashRotation = transform.rotation;
+            preSquashTopY = col.bounds.max.y;
+            preSquashBottomY = col.bounds.min.y;
+            preSquashTopOffsetY = preSquashTopY - transform.position.y;
+        }
 
         isSquashed = true;
         isGrounded = true;
@@ -487,24 +523,59 @@ public class Player : MonoBehaviour
             originalScale.y * squashedScaleY,
             originalScale.z
         );
+
+        if (squashRoutine != null) StopCoroutine(squashRoutine);
+        squashRoutine = StartCoroutine(SquashRecoverRoutine());
     }
 
-    // プレスなどから離れた時に呼ぶ。ここで初めて元に戻るまでのカウントダウンが始まる。
+    // 【互換用】PressSquash.cs等から呼ばれる可能性があるため残してあるが、
+    // 回復判定は今はSquash()側のコルーチンで完全に自動化されているので、
+    // このメソッド自体は何もしない。
     public void ReleaseSquash()
     {
-        if (!isSquashed) return;
-        if (squashRecoveryCoroutine != null) return; // すでに回復待ち中なら二重に開始しない
-
-        squashRecoveryCoroutine = StartCoroutine(RecoverFromSquash());
     }
 
-    IEnumerator RecoverFromSquash()
+    // Recovery Delay秒待ってから、上下にブロックが無くなるまで待ち続け、
+    // 無くなった瞬間に元のサイズへ戻す。
+    private IEnumerator SquashRecoverRoutine()
     {
         yield return new WaitForSeconds(recoveryDelay);
+        Debug.Log($"Squash: {recoveryDelay}秒経過。チェック開始時点でブロック有り={IsStillBlockedAbove()}");
+
+        while (IsStillBlockedAbove())
+        {
+            yield return null;
+        }
+
+        Debug.Log("Squash: 上にブロックが無いと判定したので、これから元に戻します。");
+        RevertSquash();
+        squashRoutine = null;
+    }
+
+    // 潰す直前に記録した「元のコライダーの範囲」を基準に、今も上にブロックがあるかどうかを判定する
+    // （下は見ない）。1点だけのチェックだと、プレス側の当たり判定と微妙にズレて取りこぼすことが
+    // あるため、横幅・奥行き全体を薄い箱（CheckBox）でチェックする。
+    private bool IsStillBlockedAbove()
+    {
+        int layerMask = (squashBlockLayer == 0) ? ~0 : (int)squashBlockLayer;
+
+        Vector3 halfExtents = new Vector3(
+            preSquashExtents.x * squashCheckSizeMultiplier,
+            squashCheckThickness * 0.5f,
+            preSquashExtents.z * squashCheckSizeMultiplier
+        );
+
+        Vector3 topCenter = new Vector3(transform.position.x, transform.position.y + preSquashTopOffsetY, transform.position.z);
+
+        return Physics.CheckBox(topCenter, halfExtents, preSquashRotation, layerMask, QueryTriggerInteraction.Collide);
+    }
+
+    // 実際に元のサイズへ戻す処理
+    private void RevertSquash()
+    {
         transform.localScale = originalScale;
         isSquashed = false;
         isGrounded = true;
-        squashRecoveryCoroutine = null;
         Debug.Log("Player recovered from squash!");
     }
 

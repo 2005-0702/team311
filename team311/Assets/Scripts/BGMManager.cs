@@ -1,107 +1,119 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// シーンに応じてBGMを2種類に切り替えるスクリプト。
-// 「ステージセレクト用」と「ステージプレイ中用」の2つを想定している。
+// シーンに応じてBGMを切り替えるクラス。
+// 「タイトル」「チュートリアル」「ステージセレクト」「ステージプレイ中」の4種類を想定している。
 //
-// 使い方：
-// 1. 最初に読み込まれるシーン（タイトルやステージセレクトなど）に、
-//    空のGameObjectを1つ作り、名前を「BGMManager」などにする。
-// 2. このスクリプトをAddComponentする。
-// 3. インスペクタの「Stage Select Bgm」にステージセレクト用の曲、
-//    「Stage Play Bgm」にステージプレイ中用の曲を設定する。
-// 4. 「Stage Select Scene Names」に、ステージセレクトとして扱うシーン名を入れる
-//    （デフォルトは "StageSelect" の1つ）。ここに書いていないシーン名は、
-//    全部「ステージプレイ中」として扱われる。
+// 【特徴】AudioManagerと同じく、シーンに何も置く必要がない。
+// ゲーム開始時に自動でオブジェクトを1つ生成して常駐させるので、
+// 「どのシーンから再生したか」によって鳴らなくなる、ということが起きない。
 //
-// 同じカテゴリ（例：ステージ→次のステージ）のままシーンが切り替わっても、
-// 曲は途切れずに流れ続ける。カテゴリが変わった時（例：ステージセレクット→ステージ）
-// だけ、曲を止めて新しい方を再生し直す。
-public class BGMManager : MonoBehaviour
+// 【音声ファイルの置き方】
+// Resourcesフォルダの中に、次の構成でAudioClipを置く：
+//   Resources/Audio/BGM/Title.wav
+//   Resources/Audio/BGM/Tutorial.wav
+//   Resources/Audio/BGM/StageSelect.wav
+//   Resources/Audio/BGM/StagePlay.wav
+// （拡張子はwavでもmp3でもOK。ファイル名は上の通りにする）
+//
+// 【シーン分類】
+// 下のTitleSceneNames等に、実際のシーン名を書いてください。
+// どのリストにも当てはまらないシーンは、全部「ステージプレイ中」として扱う。
+//
+// 同じカテゴリのままシーンが切り替わっても、曲は途切れずに流れ続ける。
+public static class BGMManager
 {
-    [Header("BGM設定")]
-    [Tooltip("ステージセレクト画面で流す曲")]
-    public AudioClip stageSelectBgm;
-    [Tooltip("ステージをプレイしている間に流す曲")]
-    public AudioClip stagePlayBgm;
+    private const string BgmResourcePath = "Audio/BGM/";
 
-    [Range(0f, 1f)]
-    public float volume = 0.5f;
+    // ここに実際のシーン名を入れてください
+    private static readonly string[] TitleSceneNames = { "TitleScene" };
+    private static readonly string[] TutorialSceneNames = { "TutorialScene" };
+    private static readonly string[] StageSelectSceneNames = { "StageSelect" };
+    // 上のどれにも当てはまらないシーンは、全部「ステージプレイ中」扱いになる
 
-    [Header("シーン分類")]
-    [Tooltip("ここに入れたシーン名は「ステージセレクト」として扱う。それ以外は全部「ステージプレイ中」扱いになる。")]
-    public string[] stageSelectSceneNames = { "StageSelect" };
+    public static float Volume = 0.5f;
 
-    private static BGMManager instance;
-    private AudioSource audioSource;
+    private enum BgmCategory { None, Title, Tutorial, StageSelect, StagePlay }
+    private static BgmCategory currentCategory = BgmCategory.None;
 
-    // 現在流しているカテゴリ（重複再生防止用）
-    private enum BgmCategory { None, StageSelect, StagePlay }
-    private BgmCategory currentCategory = BgmCategory.None;
+    private static BgmRunner runner;
+    private static bool sceneHooked = false;
 
-    void Awake()
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void Bootstrap()
     {
-        // すでに他のシーンから引き継がれたBGMManagerが存在するなら、
-        // 自分（新しく読み込まれた方）は消して、重複再生を防ぐ
-        if (instance != null && instance != this)
+        if (runner != null) return;
+
+        var go = new GameObject("BGMManager (auto-generated)");
+        runner = go.AddComponent<BgmRunner>();
+        Object.DontDestroyOnLoad(go);
+        Debug.Log("BGMManager: 起動しました。");
+
+        if (!sceneHooked)
         {
-            Destroy(gameObject);
-            return;
+            SceneManager.sceneLoaded += (scene, mode) => UpdateBgmForScene(scene.name);
+            sceneHooked = true;
         }
-
-        instance = this;
-        DontDestroyOnLoad(gameObject);
-
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-        audioSource.loop = true;
-        audioSource.playOnAwake = false;
-        audioSource.volume = volume;
-    }
-
-    void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
-    void Start()
-    {
-        // 最初のシーン分もここで判定して再生する
         UpdateBgmForScene(SceneManager.GetActiveScene().name);
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    private static void UpdateBgmForScene(string sceneName)
     {
-        UpdateBgmForScene(scene.name);
-    }
-
-    private void UpdateBgmForScene(string sceneName)
-    {
-        bool isStageSelect = System.Array.IndexOf(stageSelectSceneNames, sceneName) >= 0;
-        BgmCategory targetCategory = isStageSelect ? BgmCategory.StageSelect : BgmCategory.StagePlay;
+        BgmCategory targetCategory = GetCategoryForScene(sceneName);
+        Debug.Log($"BGMManager: シーン'{sceneName}' → カテゴリ'{targetCategory}'と判定しました。");
 
         // カテゴリが変わっていなければ、曲はそのまま流し続ける（途切れさせない）
         if (targetCategory == currentCategory) return;
-
         currentCategory = targetCategory;
-        AudioClip clipToPlay = isStageSelect ? stageSelectBgm : stagePlayBgm;
 
-        if (clipToPlay == null)
+        AudioClip clip = LoadClipForCategory(targetCategory);
+        if (clip == null)
         {
-            Debug.LogWarning($"BGMManager: {(isStageSelect ? "Stage Select Bgm" : "Stage Play Bgm")} が設定されていません。");
-            audioSource.Stop();
+            Debug.LogWarning($"BGMManager: {targetCategory} 用のBGM(Resources/Audio/BGM/{targetCategory})が見つかりません。");
+            runner.Stop();
             return;
         }
 
-        audioSource.clip = clipToPlay;
-        audioSource.Play();
+        runner.Play(clip, Volume);
+        Debug.Log($"BGMManager: '{clip.name}' を再生します。");
+    }
+
+    private static BgmCategory GetCategoryForScene(string sceneName)
+    {
+        if (System.Array.IndexOf(TitleSceneNames, sceneName) >= 0) return BgmCategory.Title;
+        if (System.Array.IndexOf(TutorialSceneNames, sceneName) >= 0) return BgmCategory.Tutorial;
+        if (System.Array.IndexOf(StageSelectSceneNames, sceneName) >= 0) return BgmCategory.StageSelect;
+        return BgmCategory.StagePlay;
+    }
+
+    private static AudioClip LoadClipForCategory(BgmCategory category)
+    {
+        if (category == BgmCategory.None) return null;
+        return Resources.Load<AudioClip>(BgmResourcePath + category);
+    }
+
+    private class BgmRunner : MonoBehaviour
+    {
+        private AudioSource source;
+
+        void Awake()
+        {
+            source = gameObject.AddComponent<AudioSource>();
+            source.loop = true;
+            source.playOnAwake = false;
+            source.spatialBlend = 0f;
+        }
+
+        public void Play(AudioClip clip, float volume)
+        {
+            source.clip = clip;
+            source.volume = volume;
+            source.Play();
+        }
+
+        public void Stop()
+        {
+            source.Stop();
+        }
     }
 }
