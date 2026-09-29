@@ -17,8 +17,8 @@ public class StageSelect : MonoBehaviour
     [Header("フェード後の待機時間（秒）")]
     public float revealDelay = 2.0f;
 
-    [Tooltip("目的地到着とみなす水平距離のしきい値")]
-    public float arriveThreshold = 0.005f;
+    [Tooltip("目的地到着とみなす水平距離のしきい値（小さいほど最後までちゃんと移動してから到着扱いになる）")]
+    public float arriveThreshold = 0.05f;
 
     [Header("高さ設定")]
     [Tooltip("ONにすると、開始位置のYではなく下のFixed Y Valueを使う")]
@@ -55,6 +55,9 @@ public class StageSelect : MonoBehaviour
 
         currentStage = startStage;
         transform.position = currentStage.transform.position;
+
+        // 最初のステージのラベルを「今いる状態」にしておく
+        currentStage.SetAsCurrent(true);
 
         // このY座標を「常に維持する高さ」として記録する
         // overrideHeightがONなら手動指定した値を使う
@@ -156,7 +159,10 @@ public class StageSelect : MonoBehaviour
             finalPos.z = targetPos.z;
             transform.position = finalPos;
 
+            // 離れる側のラベルは通常サイズに戻し、到着した側のラベルを大きくする
+            currentStage.SetAsCurrent(false);
             currentStage = targetStage;
+            currentStage.SetAsCurrent(true);
             targetStage = null;
             isMoving = false;
 
